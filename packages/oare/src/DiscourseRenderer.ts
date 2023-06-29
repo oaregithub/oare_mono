@@ -56,8 +56,8 @@ export default class DiscourseRenderer {
 function getSides(units: TextDiscourseUnit[]): number[] {
   const sides: Set<number> = new Set();
   units.forEach(unit => {
-    if (unit.epigraphy.side) {
-      sides.add(unit.epigraphy.side);
+    if (unit.epigraphies[0].side) {
+      sides.add(unit.epigraphies[0].side);
     }
     const childrenSides = getSides(unit.children);
     childrenSides.forEach(side => sides.add(side));
@@ -68,8 +68,8 @@ function getSides(units: TextDiscourseUnit[]): number[] {
 function getSideLines(side: number, units: TextDiscourseUnit[]): number[] {
   const lines: Set<number> = new Set();
   units.forEach(unit => {
-    if (unit.epigraphy.line && unit.epigraphy.side === side) {
-      lines.add(unit.epigraphy.line);
+    if (unit.epigraphies[0].line && unit.epigraphies[0].side === side) {
+      lines.add(unit.epigraphies[0].line);
     }
     const childrenLines = getSideLines(side, unit.children);
     childrenLines.forEach(line => lines.add(line));
@@ -83,7 +83,7 @@ function getLineTypes(
 ): DiscourseUnitType[] {
   const types: Set<DiscourseUnitType> = new Set();
   units.forEach(unit => {
-    if (unit.epigraphy.line === line) {
+    if (unit.epigraphies[0].line === line) {
       types.add(unit.type);
     }
     const childrenTypes = getLineTypes(line, unit.children);
@@ -109,7 +109,7 @@ export function displayUnitHelper(
   }
 ) {
   units.forEach(unit => {
-    if (unit.epigraphy.line === line) {
+    if (unit.epigraphies[0].line === line) {
       if (unit.transcription) {
         words.push({
           uuid: unit.uuid,
@@ -139,7 +139,7 @@ export function lineReadingHelperForWordsInTexts(
   }
 ) {
   units.forEach(unit => {
-    if (unit.epigraphy.line === line) {
+    if (unit.epigraphies[0].line === line) {
       if (unit.transcription) {
         words.push(
           renderFormatter.transliteration(

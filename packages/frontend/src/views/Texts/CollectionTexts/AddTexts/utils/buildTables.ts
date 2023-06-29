@@ -6,11 +6,8 @@ import {
   TextMarkupRow,
   SignInfo,
   TextRow,
-  TextEpigraphyRowPartial,
-  TextMarkupRowPartial,
   MarkupType,
   TextDiscourseRow,
-  TextDiscourseRowPartial,
   SideContent,
   ColumnContent,
   RowContent,
@@ -49,12 +46,12 @@ const regionMarkupType = (
 };
 
 const createTextEpigraphyRow = async (
-  row: TextEpigraphyRowPartial
+  row: Partial<TextEpigraphyRow>
 ): Promise<TextEpigraphyRow> => ({
-  uuid: row.uuid,
-  type: row.type,
-  textUuid: row.textUuid,
-  treeUuid: row.treeUuid,
+  uuid: row.uuid || '',
+  type: row.type || 'epigraphicUnit',
+  textUuid: row.textUuid || '',
+  treeUuid: row.treeUuid || '',
   parentUuid: row.parentUuid || null,
   objectOnTablet: row.objectOnTablet !== undefined ? row.objectOnTablet : null,
   side: row.side !== undefined ? row.side : null,
@@ -70,11 +67,11 @@ const createTextEpigraphyRow = async (
 });
 
 const createTextMarkupRow = async (
-  row: TextMarkupRowPartial
+  row: Partial<TextMarkupRow>
 ): Promise<TextMarkupRow> => ({
-  uuid: row.uuid,
-  referenceUuid: row.referenceUuid,
-  type: row.type,
+  uuid: row.uuid || '',
+  referenceUuid: row.referenceUuid || '',
+  type: row.type || 'broken',
   numValue: row.numValue !== undefined ? row.numValue : null,
   altReadingUuid: row.altReadingUuid || null,
   altReading: row.altReading || null,
@@ -84,15 +81,15 @@ const createTextMarkupRow = async (
 });
 
 const createTextDiscourseRow = async (
-  row: TextDiscourseRowPartial
+  row: Partial<TextDiscourseRow>
 ): Promise<TextDiscourseRow> => ({
-  uuid: row.uuid,
-  type: row.type,
-  objInText: row.objInText !== undefined ? row.objInText : null,
+  uuid: row.uuid || '',
+  type: row.type || 'word',
+  objInText: row.objInText !== undefined ? row.objInText : 0,
   wordOnTablet: row.wordOnTablet !== undefined ? row.wordOnTablet : null,
   childNum: row.childNum !== undefined ? row.childNum : null,
-  textUuid: row.textUuid,
-  treeUuid: row.treeUuid,
+  textUuid: row.textUuid || '',
+  treeUuid: row.treeUuid || '',
   parentUuid: row.parentUuid || null,
   spellingUuid: row.spellingUuid || null,
   spelling: row.spelling || null,

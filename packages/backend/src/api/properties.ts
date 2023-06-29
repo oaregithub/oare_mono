@@ -216,8 +216,8 @@ router.route('/properties_links').get(async (req, res, next) => {
       };
 
       const response: LinkItem[] = rows.map(row => {
-        const line = row.epigraphy.line
-          ? `<b> - Line ${row.epigraphy.line}</b>`
+        const line = row.epigraphies[0].line
+          ? `<b> - Line ${row.epigraphies[0].line}</b>`
           : '';
         return {
           objectUuid: row.uuid,

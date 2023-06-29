@@ -33,7 +33,7 @@ export interface TextDiscourseRow {
 export interface TextDiscourse extends TextDiscourseRow {
   translations: FieldRow[];
   paragraphLabels: string[];
-  epigraphy: TextEpigraphyRow;
+  epigraphies: TextEpigraphyRow[];
   properties: ItemProperty[];
   notes: Note[];
 }

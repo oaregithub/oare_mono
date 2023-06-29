@@ -1,5 +1,5 @@
 /* eslint-disable dot-notation */
-import { EpigraphicUnit, MarkupUnit, TabletHtmlOptions } from '@oare/types';
+import { EpigraphicUnit, TabletHtmlOptions, TextMarkupRow } from '@oare/types';
 import TabletRenderer from './TabletRenderer';
 import { localizeString } from './tabletUtils';
 
@@ -80,10 +80,14 @@ export default class TabletHtmlRenderer extends TabletRenderer {
 
   markedUpEpigraphicReading(unit: EpigraphicUnit): string {
     let baseReading = super.markedUpEpigraphicReading(unit);
-    if (unit.type === 'determinative') {
+    if (unit.signReadingRow && unit.signReadingRow.type === 'determinative') {
       baseReading = `<sup>${baseReading}</sup>`;
     }
-    if (unit.type === 'phonogram' && unit.reading !== '...') {
+    if (
+      unit.signReadingRow &&
+      unit.signReadingRow.type === 'phonogram' &&
+      unit.reading !== '...'
+    ) {
       if (containsSuperscript(baseReading)) {
         const basePieces = wordPiecesWithoutSuperscript(baseReading);
         const superscriptPieces = wordPiecesWithSuperscript(baseReading);
@@ -129,7 +133,7 @@ export default class TabletHtmlRenderer extends TabletRenderer {
     throw new Error('Undefined renderer passed to render decorator');
   }
 
-  applySingleMarkup(markup: MarkupUnit, reading: string): string {
+  applySingleMarkup(markup: TextMarkupRow, reading: string): string {
     let formattedReading = reading;
     switch (markup.type) {
       case 'isCollatedReading':

@@ -1,6 +1,6 @@
 // FIXME should deprecate all sign code things. Still used to create/edit texts so need to replace that first.
 
-import { EpigraphicUnitType, EditorMarkup } from './epigraphies';
+import { EditorMarkup } from './epigraphies';
 
 export type SignCodeType = 'image' | 'utf8' | 'undetermined';
 
@@ -14,7 +14,7 @@ export interface SignCode {
   sign?: string;
   reading?: string;
   value?: string;
-  readingType?: EpigraphicUnitType;
+  readingType?: SignReadingType;
   markup?: EditorMarkup;
 }
 
@@ -44,19 +44,27 @@ export interface SignOrgRow {
 export interface SignReadingRow {
   uuid: string;
   referenceUuid: string;
-  type: string; // FIXME could maybe be EpigraphyUnitType but some are missing. Look into updating.
+  type: SignReadingType;
   numName: string | null;
   reading: string;
   value: string;
   frequency: string;
 }
 
-export interface SignReadingRowWithOccurrences extends SignReadingRow {
+export interface SignReading extends SignReadingRow {
   occurrences: number;
 }
 
 export interface Sign extends SignRow {
   orgs: SignOrgRow[];
-  readings: SignReadingRowWithOccurrences[];
+  readings: SignReading[];
   occurrences: number;
 }
+
+export type SignReadingType =
+  | 'phonogram'
+  | 'logogram'
+  | 'number'
+  | 'determinative'
+  | 'punctuation'
+  | 'uninterpreted';

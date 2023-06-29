@@ -26,30 +26,28 @@ class SignDao {
       uuid,
       trx
     );
-    const signReadingRows = await SignReadingDao.getSignReadingRowsByReferenceUuid(
-      uuid,
-      trx
-    );
-
-    const signReadingOccurrences: number[] = await Promise.all(
-      signReadingRows.map(r =>
-        TextEpigraphyDao.getSignReadingOccurrencesCount(r.uuid, trx)
-      )
-    );
 
     const occurrences = await TextEpigraphyDao.getSignOccurrencesCount(
       uuid,
       trx
     );
 
+    const signReadingUuids = await SignReadingDao.getSignReadingUuidsByReferenceUuid(
+      uuid,
+      trx
+    );
+
+    const readings = await Promise.all(
+      signReadingUuids.map(signReadingUuid =>
+        SignReadingDao.getSignReadingByUuid(signReadingUuid, trx)
+      )
+    );
+
     const sign: Sign = {
       ...signRow,
       occurrences,
       orgs: signOrgRows,
-      readings: signReadingRows.map((r, idx) => ({
-        ...r,
-        occurrences: signReadingOccurrences[idx],
-      })),
+      readings,
     };
 
     return sign;
@@ -92,7 +90,7 @@ class SignDao {
    * @returns A row from the `sign` table.
    * @throws Error if the sign row does not exist.
    */
-  private async getSignRowByUuid(
+  public async getSignRowByUuid(
     uuid: string,
     trx?: Knex.Transaction
   ): Promise<SignRow> {

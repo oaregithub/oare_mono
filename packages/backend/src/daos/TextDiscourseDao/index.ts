@@ -101,14 +101,15 @@ class TextDiscourseDao {
         const prevUnitIdx = _.findLastIndex(
           newUnits,
           backUnit =>
-            backUnit.epigraphy.line !== null && backUnit.objInText < objInText
+            backUnit.epigraphies[0].line !== null &&
+            backUnit.objInText < objInText
         );
 
         let objLine: number | null = null;
         if (prevUnitIdx === -1) {
           objLine = 0.1;
-        } else if (newUnits[prevUnitIdx].epigraphy.line !== null) {
-          objLine = newUnits[prevUnitIdx].epigraphy.line! + 0.1;
+        } else if (newUnits[prevUnitIdx].epigraphies[0].line !== null) {
+          objLine = newUnits[prevUnitIdx].epigraphies[0].line! + 0.1;
         }
 
         return [...newUnits, { ...unit, line: objLine }];
@@ -341,7 +342,7 @@ class TextDiscourseDao {
       trx
     );
 
-    const epigraphy = await TextEpigraphyDao.getTextEpigraphyRowByDiscourseUuid(
+    const epigraphies = await TextEpigraphyDao.getTextEpigraphyRowsByDiscourseUuid(
       uuid,
       trx
     );
@@ -357,7 +358,7 @@ class TextDiscourseDao {
       ...row,
       translations,
       paragraphLabels,
-      epigraphy,
+      epigraphies,
       properties,
       notes,
     };

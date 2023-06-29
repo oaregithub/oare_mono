@@ -27,7 +27,7 @@ class TextDao {
       trx
     );
 
-    const hasEpigraphy = await TextEpigraphyDao.hasEpigraphy(uuid, trx);
+    const hasEpigraphy = await TextEpigraphyDao.textHasEpigraphy(uuid, trx);
 
     const text: Text = {
       ...textRow,

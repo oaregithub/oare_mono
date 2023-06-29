@@ -1,61 +1,71 @@
 import knex from '@/connection';
-import { MarkupUnit, TextMarkupRow } from '@oare/types';
+import { TextMarkupRow } from '@oare/types';
 import { Knex } from 'knex';
 
-// FIXME
+// COMPLETE
 
 class TextMarkupDao {
-  async getMarkups(
-    textUuid: string,
-    line?: number,
-    epigraphyUuid?: string,
+  /**
+   * Retrievs a list of text markup UUIDs for a given reference UUID.
+   * @param referenceUuid The reference UUID to retrieve text markup UUIDs for.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of text markup UUIDs.
+   */
+  public async getTextMarkupUuidsByReferenceUuid(
+    referenceUuid: string,
     trx?: Knex.Transaction
-  ): Promise<MarkupUnit[]> {
+  ): Promise<string[]> {
     const k = trx || knex;
-    let query = k('text_markup')
-      .select(
-        'text_markup.reference_uuid AS referenceUuid',
-        'text_markup.type AS type',
-        'text_markup.num_value AS value',
-        'text_markup.start_char AS startChar',
-        'text_markup.end_char as endChar',
-        'text_markup.alt_reading as altReading',
-        'text_markup.alt_reading_uuid as altReadingUuid'
-      )
-      .innerJoin(
-        'text_epigraphy',
-        'text_markup.reference_uuid',
-        'text_epigraphy.uuid'
-      )
-      .where('text_epigraphy.text_uuid', textUuid);
 
-    if (typeof line !== 'undefined') {
-      query = query.andWhere('text_epigraphy.line', line);
-    }
+    const uuids: string[] = await k('text_markup')
+      .pluck('uuid')
+      .where({ reference_uuid: referenceUuid });
 
-    if (epigraphyUuid) {
-      query = query.andWhere('text_epigraphy.uuid', epigraphyUuid);
-    }
-
-    const markups: MarkupUnit[] = await query;
-
-    markups.sort(a => {
-      if (
-        a.type === 'damage' ||
-        a.type === 'partialDamage' ||
-        a.type === 'isCollatedReading' ||
-        a.type === 'isEmendedReading' ||
-        a.type === 'uncertain'
-      ) {
-        return -1;
-      }
-      return 0;
-    });
-    return markups;
+    return uuids;
   }
 
-  async insertMarkupRow(row: TextMarkupRow, trx?: Knex.Transaction) {
+  /**
+   * Retrievs a single text markup row by UUID.
+   * @param uuid The UUID of the text markup row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single text markup row.
+   */
+  public async getTextMarkupRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<TextMarkupRow> {
     const k = trx || knex;
+
+    const row: TextMarkupRow | undefined = await k('text_markup')
+      .select(
+        'uuid',
+        'reference_uuid as referenceUuid',
+        'type',
+        'num_value as numValue',
+        'alt_reading_uuid as altReadingUuid',
+        'alt_reading as altReading',
+        'start_char as startChar',
+        'end_char as endChar',
+        'obj_uuid as objectUuid'
+      )
+      .where({ uuid })
+      .first();
+
+    if (!row) {
+      throw new Error(`No text markup row with uuid ${uuid}`);
+    }
+
+    return row;
+  }
+
+  /**
+   * Inserts a text markup row into the database.
+   * @param row The text markup row to insert.
+   * @param trx Knex Transaction. Optional.
+   */
+  public async insertMarkupRow(row: TextMarkupRow, trx?: Knex.Transaction) {
+    const k = trx || knex;
+
     await k('text_markup').insert({
       uuid: row.uuid,
       reference_uuid: row.referenceUuid,
@@ -70,4 +80,7 @@ class TextMarkupDao {
   }
 }
 
+/**
+ * TextMarkupDao instance as a singleton.
+ */
 export default new TextMarkupDao();

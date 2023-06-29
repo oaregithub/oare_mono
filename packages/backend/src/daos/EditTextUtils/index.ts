@@ -17,7 +17,7 @@ import {
   RemoveSignPayload,
   AddLinePayload,
   TextDiscourseRow,
-  EpigraphicUnitType,
+  SignReadingType,
   EpigraphyType,
   MergeLinePayload,
   AddUndeterminedLinesPayload,
@@ -30,7 +30,6 @@ import {
   AddDividerPayload,
   DiscourseUnitType,
   EditSignPayload,
-  MarkupUnit,
   EditUndeterminedSignsPayload,
   EditDividerPayload,
   ReorderSignPayload,
@@ -50,7 +49,7 @@ import { cleanLines } from './utils';
 // FIXME
 
 const getEpigraphyType = (
-  readingType: EpigraphicUnitType | undefined
+  readingType: SignReadingType | undefined
 ): EpigraphyType => {
   if (readingType) {
     switch (readingType) {
@@ -481,8 +480,8 @@ const getMarkupToAutoAdd = async (
 const editDamageBrackets = async (
   type: 'damage' | 'partialDamage',
   referenceUuid: string,
-  existingMarkup: MarkupUnit[],
-  payloadMarkup: MarkupUnit[],
+  existingMarkup: TextMarkupRow[],
+  payloadMarkup: TextMarkupRow[],
   trx?: Knex.Transaction
 ) => {
   const k = trx || knex;
@@ -555,18 +554,22 @@ const editDamageBrackets = async (
 const editMarkupSelection = async (
   uuid: string,
   textUuid: string,
-  payloadMarkup: MarkupUnit[],
+  payloadMarkup: TextMarkupRow[],
   trx?: Knex.Transaction
 ): Promise<void> => {
   const k = trx || knex;
   const TextMarkupDao = sl.get('TextMarkupDao');
 
   // MARKUP
-  const existingMarkup = await TextMarkupDao.getMarkups(
-    textUuid,
-    undefined,
+
+  const existingMarkupUuids = await TextMarkupDao.getTextMarkupUuidsByReferenceUuid(
     uuid,
     trx
+  );
+  const existingMarkup = await Promise.all(
+    existingMarkupUuids.map(markupUuid =>
+      TextMarkupDao.getTextMarkupRowByUuid(markupUuid, trx)
+    )
   );
 
   // DAMAGE
@@ -1315,7 +1318,7 @@ class EditTextUtils {
 
     const word = payload.row.words[0];
 
-    const newObjectOnTablet = payload.previousWord
+    const newObjectOnTablet = payload.previousDiscourseUuid
       ? await k('text_epigraphy')
           .select('object_on_tablet')
           .first()
@@ -1324,7 +1327,7 @@ class EditTextUtils {
             side: sideNumber,
             column: payload.column,
             line: payload.line,
-            discourse_uuid: payload.previousWord.discourseUuid,
+            discourse_uuid: payload.previousDiscourseUuid,
           })
           .orderBy('object_on_tablet', 'desc')
           .then(row => row.object_on_tablet + 1)

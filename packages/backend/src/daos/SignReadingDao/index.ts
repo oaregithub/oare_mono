@@ -1,5 +1,5 @@
 import knex from '@/connection';
-import { SignReadingRow, Sign } from '@oare/types';
+import { SignReadingRow, Sign, SignReading } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
@@ -68,18 +68,37 @@ class SignReadingDao {
   }
 
   /**
-   * Retrieves all rows from the `sign_reading` table by reference UUID.
-   * @param referenceUuid The reference UUID of the rows to retrieve.
+   * Retrieves a list of sign reading UUIDs for a given reference UUID.
+   * @param referenceUuid The reference UUID to retrieve sign reading UUIDs for.
    * @param trx Knex Transaction. Optional.
-   * @returns Array of rows from the `sign_reading` table.
+   * @returns Array of sign reading UUIDs.
    */
-  public async getSignReadingRowsByReferenceUuid(
+  public async getSignReadingUuidsByReferenceUuid(
     referenceUuid: string,
     trx?: Knex.Transaction
-  ): Promise<SignReadingRow[]> {
+  ): Promise<string[]> {
     const k = trx || knex;
 
-    const rows: SignReadingRow[] = await k('sign_reading')
+    const uuids: string[] = await k('sign_reading')
+      .pluck('uuid')
+      .where({ reference_uuid: referenceUuid });
+
+    return uuids;
+  }
+
+  /**
+   * Retrieves a single sign reading row by UUID.
+   * @param uuid The UUID of the sign reading row to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A single sign reading row.
+   */
+  public async getSignReadingRowByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<SignReadingRow> {
+    const k = trx || knex;
+
+    const row: SignReadingRow | undefined = await k('sign_reading')
       .select(
         'uuid',
         'reference_uuid as referenceUuid',
@@ -89,9 +108,39 @@ class SignReadingDao {
         'value',
         'frequency'
       )
-      .where({ reference_uuid: referenceUuid });
+      .where({ uuid })
+      .first();
 
-    return rows;
+    if (!row) {
+      throw new Error(`Sign reading with uuid ${uuid} does not exist.`);
+    }
+
+    return row;
+  }
+
+  /**
+   * Constructs a sign reading object for a given sign reading UUID.
+   * @param uuid The UUID of the sign reading to retrieve.
+   * @param trx Knex Transaction. Optional.
+   * @returns A sign reading object.
+   */
+  public async getSignReadingByUuid(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<SignReading> {
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+
+    const row = await this.getSignReadingRowByUuid(uuid, trx);
+
+    const occurrences = await TextEpigraphyDao.getSignReadingOccurrencesCount(
+      uuid,
+      trx
+    );
+
+    return {
+      ...row,
+      occurrences,
+    };
   }
 
   /**
