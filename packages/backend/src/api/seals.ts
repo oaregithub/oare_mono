@@ -1,5 +1,5 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import cacheMiddleware from '@/middlewares/router/cache';
 import {
@@ -56,6 +56,12 @@ router
         const cache = sl.get('cache');
 
         const uuid = req.params.uuid as string;
+
+        const sealExists = await SpatialUnitDao.spatialUnitExists(uuid);
+        if (!sealExists) {
+          next(new HttpBadRequest('Seal does not exist'));
+          return;
+        }
 
         const seal = await SpatialUnitDao.getSealByUuid(uuid);
 

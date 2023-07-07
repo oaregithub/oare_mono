@@ -3,84 +3,22 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const seal = {
-  uuid: 'dd978e96-1066-960b-d083-1cbb233c3764',
-  name: 'Seal of Aššur-rabi s. Lā-qēpum',
-  imageLinks: ['imageLink'],
-  count: 1,
-  sealProperties: [
-    {
-      'Primary Classification': 'Cylinder Seal',
-    },
-    {
-      Style: 'Cappadocian Style',
-    },
-    {
-      Scene: 'Presentation Scene',
-    },
-    {
-      'Teissier Number (CS)': '110',
-    },
-    {
-      CS: '110',
-    },
-  ],
-  sealImpressions: [
-    {
-      uuid: 'd7c160df-1ef6-4070-bbe2-3d81b4938bb2',
-      type: 'logosyllabic',
-      language: null,
-      cdliNum: 'P359420',
-      translitStatus: '5536b5bd-e18e-11ea-8c9d-02b316ca7378',
-      name: 'ICK 1 22a Envelope',
-      displayName: 'ICK 1 22a',
-      excavationPrefix: null,
-      excavationNumber: null,
-      museumPrefix: 'Ka',
-      museumNumber: null,
-      publicationPrefix: 'ICK 1',
-      publicationNumber: '22a',
-      objectType: 'envelope',
-      source: null,
-      genre: null,
-      subgenre: null,
-    },
-  ],
-};
+describe('GET /seals', () => {
+  const PATH = `${API_PATH}/seals`;
 
-const mockPermissionsDao = {
-  getUserPermissions: jest.fn().mockResolvedValue([
-    {
-      name: 'SEALS',
-    },
-    { name: 'EDIT_SEAL' },
-    { name: 'ADD_SEAL_LINK' },
-  ]),
-};
-
-const mockUserDao = {
-  getUserByUuid: jest.fn().mockResolvedValue({
-    uuid: 'user-uuid',
-  }),
-};
-
-describe('GET /seals/:uuid', () => {
-  const PATH = `${API_PATH}/seals/${seal.uuid}`;
-
-  const mockSealDao = {
-    getSealByUuid: jest
-      .fn()
-      .mockResolvedValue({ name: seal.name, uuid: seal.uuid }),
-    getSealImpressionsBySealUuid: jest
-      .fn()
-      .mockResolvedValue(seal.sealImpressions),
-    getSealProperties: jest.fn().mockResolvedValue(seal.sealProperties),
-    getSealImpressionCountBySealUuid: jest.fn().mockResolvedValue(seal.count),
-    getImagesBySealUuid: jest.fn().mockResolvedValue(seal.imageLinks),
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ uuid: 'test-user-uuid' }),
   };
 
-  const mockTextDao = {
-    getTextByUuid: jest.fn().mockResolvedValue(seal.sealImpressions[0]),
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([{ name: 'SEALS' }]),
+  };
+
+  const mockSpatialUnitDao = {
+    getAllSealUuids: jest
+      .fn()
+      .mockResolvedValue(['test-uuid-1', 'test-uuid-2']),
+    getSealCoreByUuid: jest.fn().mockResolvedValue({}),
   };
 
   const mockCache = {
@@ -89,11 +27,10 @@ describe('GET /seals/:uuid', () => {
   };
 
   const setup = () => {
-    sl.set('SealDao', mockSealDao);
-    sl.set('cache', mockCache);
-    sl.set('TextDao', mockTextDao);
-    sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('SpatialUnitDao', mockSpatialUnitDao);
+    sl.set('cache', mockCache);
   };
 
   beforeEach(setup);
@@ -108,22 +45,17 @@ describe('GET /seals/:uuid', () => {
 
   it('returns 200 on successful seals retrieval', async () => {
     const response = await sendRequest();
-    expect(mockSealDao.getSealByUuid).toHaveBeenCalled();
-    expect(mockSealDao.getSealProperties).toHaveBeenCalled();
-    expect(mockSealDao.getImagesBySealUuid).toHaveBeenCalled();
+    expect(mockSpatialUnitDao.getAllSealUuids).toHaveBeenCalled();
+    expect(mockSpatialUnitDao.getSealCoreByUuid).toHaveBeenCalledTimes(2);
     expect(response.status).toBe(200);
   });
 
-  it('returns 500 on failed seal retrieval', async () => {
-    sl.set('SealDao', {
-      ...mockSealDao,
-      getSealByUuid: jest.fn().mockRejectedValue('failed seal retrieval'),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(500);
+  it('returns 401 if user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
   });
 
-  it('returns 403 when user does not have permission', async () => {
+  it('returns 403 if user does not have permission', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
       getUserPermissions: jest.fn().mockResolvedValue([]),
@@ -132,14 +64,117 @@ describe('GET /seals/:uuid', () => {
     expect(response.status).toBe(403);
   });
 
-  it('returns 401 when user is not logged in', async () => {
+  it('returns 500 if seals retrieval fails', async () => {
+    sl.set('SpatialUnitDao', {
+      ...mockSpatialUnitDao,
+      getAllSealUuids: jest.fn().mockRejectedValue('Failed to retrieve seals'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('GET /seals/:uuid', () => {
+  const uuid = 'test-uuid';
+  const PATH = `${API_PATH}/seals/${uuid}`;
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ uuid: 'test-user-uuid' }),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([{ name: 'SEALS' }]),
+  };
+
+  const mockSpatialUnitDao = {
+    spatialUnitExists: jest.fn().mockResolvedValue(true),
+    getSealByUuid: jest.fn().mockResolvedValue({}),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+  };
+
+  const setup = () => {
+    sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('SpatialUnitDao', mockSpatialUnitDao);
+    sl.set('cache', mockCache);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = (auth = true) => {
+    const req = request(app).get(PATH);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
+
+  it('returns 200 on successful seal retrieval', async () => {
+    const response = await sendRequest();
+    expect(mockSpatialUnitDao.getSealByUuid).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 400 if the seal does not exist', async () => {
+    sl.set('SpatialUnitDao', {
+      ...mockSpatialUnitDao,
+      spatialUnitExists: jest.fn().mockResolvedValue(false),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 401 if user is not logged in', async () => {
     const response = await sendRequest(false);
     expect(response.status).toBe(401);
+  });
+
+  it('returns 403 if user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 if seal retrieval fails', async () => {
+    sl.set('SpatialUnitDao', {
+      ...mockSpatialUnitDao,
+      getSealByUuid: jest.fn().mockRejectedValue('Failed to retrieve seal'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
   });
 });
 
 describe('PATCH /seals/:uuid', () => {
-  const PATH = `${API_PATH}/seals/${seal.uuid}`;
+  const uuid = 'test-uuid';
+  const PATH = `${API_PATH}/seals/${uuid}`;
+
+  const mockBody = {
+    name: 'test-name',
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ uuid: 'test-user-uuid' }),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([{ name: 'EDIT_SEAL' }]),
+  };
+
+  const mockAliasDao = {
+    updateName: jest.fn().mockResolvedValue(),
+  };
+
+  const mockCache = {
+    clear: jest.fn(),
+  };
 
   const mockUtils = {
     createTransaction: jest.fn(async cb => {
@@ -147,50 +182,37 @@ describe('PATCH /seals/:uuid', () => {
     }),
   };
 
-  const mockSealDao = {
-    updateSealSpelling: jest.fn().mockResolvedValue(),
-  };
-
-  const mockCache = {
-    retrieve: jest.fn().mockResolvedValue(null),
-    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
-    clear: jest.fn().mockResolvedValue(),
-  };
-
   const setup = () => {
-    sl.set('SealDao', mockSealDao);
+    sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('AliasDao', mockAliasDao);
     sl.set('cache', mockCache);
     sl.set('utils', mockUtils);
-    sl.set('PermissionsDao', mockPermissionsDao);
-    sl.set('UserDao', mockUserDao);
   };
 
   beforeEach(setup);
 
   const sendRequest = (auth = true) => {
-    const req = request(app).patch(PATH);
+    const req = request(app).patch(PATH).send(mockBody);
     if (auth) {
       return req.set('Authorization', 'token');
     }
     return req;
   };
 
-  it('returns 201 on successful seal update', async () => {
+  it('returns 201 on successful seal name update', async () => {
     const response = await sendRequest();
-    expect(mockSealDao.updateSealSpelling).toHaveBeenCalled();
+    expect(mockAliasDao.updateName).toHaveBeenCalled();
+    expect(mockCache.clear).toHaveBeenCalled();
     expect(response.status).toBe(201);
   });
 
-  it('returns 500 on failed seal update', async () => {
-    sl.set('SealDao', {
-      ...mockSealDao,
-      updateSealSpelling: jest.fn().mockRejectedValue('failed seal update'),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(500);
+  it('returns 401 if user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
   });
 
-  it('returns 403 when user does not have permission', async () => {
+  it('returns 403 if user does not have permission', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
       getUserPermissions: jest.fn().mockResolvedValue([]),
@@ -199,33 +221,132 @@ describe('PATCH /seals/:uuid', () => {
     expect(response.status).toBe(403);
   });
 
-  it('returns 401 when user is not logged in', async () => {
-    const response = await sendRequest(false);
-    expect(response.status).toBe(401);
+  it('returns 500 if seal name update fails', async () => {
+    sl.set('AliasDao', {
+      ...mockAliasDao,
+      updateName: jest.fn().mockRejectedValue('Failed to update seal name'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
   });
 });
 
-describe('GET /seals', () => {
-  const PATH = `${API_PATH}/seals`;
+describe('PATH /seal_impression', () => {
+  const PATH = `${API_PATH}/seal_impression`;
 
-  const mockSealDao = {
-    getSeals: jest
+  const mockBody = {
+    sealUuid: 'test-seal-uuid',
+    textEpigraphyUuid: 'test-text-epigraphy-uuid',
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ uuid: 'test-user-uuid' }),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest
       .fn()
-      .mockResolvedValue([{ name: seal.name, uuid: seal.uuid }]),
-    getSealImpressionCountBySealUuid: jest.fn().mockResolvedValue(seal.count),
-    getImagesBySealUuid: jest.fn().mockResolvedValue(seal.imageLinks),
+      .mockResolvedValue([{ name: 'ADD_SEAL_LINK' }]),
+  };
+
+  const mockItemPropertiesDao = {
+    getItemPropertiesByReferenceUuid: jest.fn().mockResolvedValue([
+      {
+        valueUuid: 'ec820e17-ecc7-492f-86a7-a01b379622e1',
+        uuid: 'test-item-property-uuid',
+      },
+    ]),
+    insertItemPropertyRows: jest.fn().mockResolvedValue(),
   };
 
   const mockCache = {
-    retrieve: jest.fn().mockResolvedValue(null),
-    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+    clear: jest.fn(),
+  };
+
+  const mockUtils = {
+    createTransaction: jest.fn(async cb => {
+      await cb();
+    }),
   };
 
   const setup = () => {
-    sl.set('SealDao', mockSealDao);
-    sl.set('cache', mockCache);
-    sl.set('PermissionsDao', mockPermissionsDao);
     sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
+    sl.set('cache', mockCache);
+    sl.set('utils', mockUtils);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = (auth = true) => {
+    const req = request(app).patch(PATH).send(mockBody);
+    if (auth) {
+      return req.set('Authorization', 'token');
+    }
+    return req;
+  };
+
+  it('returns 201 on successful seal impression connection', async () => {
+    const response = await sendRequest();
+    expect(mockItemPropertiesDao.insertItemPropertyRows).toHaveBeenCalled();
+    expect(mockCache.clear).toHaveBeenCalled();
+    expect(response.status).toBe(201);
+  });
+
+  it('returns 401 if user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 if user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      ...mockPermissionsDao,
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 if seal impression connection fails', async () => {
+    sl.set('ItemPropertiesDao', {
+      ...mockItemPropertiesDao,
+      insertItemPropertyRows: jest
+        .fn()
+        .mockRejectedValue('Failed to connect seal impression'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('GET /seal_impression/:uuid', () => {
+  const uuid = 'test-uuid';
+  const PATH = `${API_PATH}/seal_impression/${uuid}`;
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ uuid: 'test-user-uuid' }),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest
+      .fn()
+      .mockResolvedValue([{ name: 'ADD_SEAL_LINK' }]),
+  };
+
+  const mockItemPropertiesDao = {
+    getItemPropertiesByReferenceUuid: jest.fn().mockResolvedValue([
+      {
+        variableUuid: 'f32e6903-67c9-41d8-840a-d933b8b3e719',
+        objectUuid: 'test-object-uuid',
+      },
+    ]),
+  };
+
+  const setup = () => {
+    sl.set('UserDao', mockUserDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
   };
 
   beforeEach(setup);
@@ -238,22 +359,20 @@ describe('GET /seals', () => {
     return req;
   };
 
-  it('returns 200 on successful seals retrieval', async () => {
+  it('returns 200 on successful seal impression retrieval', async () => {
     const response = await sendRequest();
-    expect(mockSealDao.getSeals).toHaveBeenCalled();
+    expect(
+      mockItemPropertiesDao.getItemPropertiesByReferenceUuid
+    ).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
-  it('returns 500 on failed seal retrieval', async () => {
-    sl.set('SealDao', {
-      ...mockSealDao,
-      getSeals: jest.fn().mockRejectedValue('failed seals retrieval'),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(500);
+  it('returns 401 if user is not logged in', async () => {
+    const response = await sendRequest(false);
+    expect(response.status).toBe(401);
   });
 
-  it('returns 403 when user does not have permission', async () => {
+  it('returns 403 if user does not have permission', async () => {
     sl.set('PermissionsDao', {
       ...mockPermissionsDao,
       getUserPermissions: jest.fn().mockResolvedValue([]),
@@ -262,88 +381,14 @@ describe('GET /seals', () => {
     expect(response.status).toBe(403);
   });
 
-  it('returns 401 when user is not logged in', async () => {
-    const response = await sendRequest(false);
-    expect(response.status).toBe(401);
-  });
-});
-
-describe('POST /connect/seal_impression', () => {
-  const PATH = `${API_PATH}/connect/seal_impression`;
-
-  const parentUuid = 'parentUuid';
-
-  const mockUtils = {
-    createTransaction: jest.fn(async cb => {
-      await cb();
-    }),
-  };
-
-  const mockSealDao = {
-    getSealLinkParentUuid: jest.fn().mockResolvedValue(parentUuid),
-  };
-
-  const mockCache = {
-    retrieve: jest.fn().mockResolvedValue(null),
-    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
-    clear: jest.fn().mockResolvedValue(),
-  };
-
-  const mockItemPropertiesDao = {
-    addProperties: jest.fn().mockResolvedValue(),
-  };
-
-  const setup = () => {
-    sl.set('SealDao', mockSealDao);
-    sl.set('cache', mockCache);
-    sl.set('utils', mockUtils);
-    sl.set('PermissionsDao', mockPermissionsDao);
-    sl.set('UserDao', mockUserDao);
-    sl.set('ItemPropertiesDao', mockItemPropertiesDao);
-  };
-
-  const payload = {
-    textEpigraphyUuid: 'teUuid',
-    sealUuid: 'sealUuid',
-  };
-
-  beforeEach(setup);
-
-  const sendRequest = (auth = true) => {
-    const req = request(app).post(PATH).send(payload);
-    if (auth) {
-      return req.set('Authorization', 'token');
-    }
-    return req;
-  };
-
-  it('returns 201 on successfully connect seal to seal impression', async () => {
-    const response = await sendRequest();
-    expect(mockSealDao.getSealLinkParentUuid).toHaveBeenCalled();
-    expect(mockItemPropertiesDao.addProperties).toHaveBeenCalled();
-    expect(response.status).toBe(201);
-  });
-
-  it('returns 500 on failed connection of seal to seal impression', async () => {
+  it('returns 500 if seal impression retrieval fails', async () => {
     sl.set('ItemPropertiesDao', {
       ...mockItemPropertiesDao,
-      addProperties: jest.fn().mockRejectedValue('failed seal connection'),
+      getItemPropertiesByReferenceUuid: jest
+        .fn()
+        .mockRejectedValue('Failed to retrieve seal impression'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);
-  });
-
-  it('returns 403 when user does not have permission', async () => {
-    sl.set('PermissionsDao', {
-      ...mockPermissionsDao,
-      getUserPermissions: jest.fn().mockResolvedValue([]),
-    });
-    const response = await sendRequest();
-    expect(response.status).toBe(403);
-  });
-
-  it('returns 401 when user is not logged in', async () => {
-    const response = await sendRequest(false);
-    expect(response.status).toBe(401);
   });
 });

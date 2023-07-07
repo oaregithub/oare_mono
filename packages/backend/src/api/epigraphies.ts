@@ -310,6 +310,7 @@ router
           tables.markups.map(row => TextMarkupDao.insertMarkupRow(row, trx))
         );
 
+        // Public Denylist
         await PublicDenylistDao.addItemsToDenylist(
           [tables.text.uuid],
           'text',

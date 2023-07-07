@@ -3,28 +3,9 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const mockGETCollectionTexts = {
-  totalTexts: 2,
-  texts: [
-    {
-      id: 'id1',
-      uuid: 'uuid1',
-      name: 'name1',
-      hasEpigraphy: true,
-      type: 'type1',
-    },
-    {
-      id: 'id2',
-      uuid: 'uuid2',
-      name: 'name2',
-      hasEpigraphy: true,
-      type: 'type2',
-    },
-  ],
-};
-
 describe('GET /collections', () => {
   const PATH = `${API_PATH}/collections`;
+
   const collectionUuid = 'collection-uuid';
   const collection = {
     uuid: collectionUuid,
@@ -33,7 +14,7 @@ describe('GET /collections', () => {
 
   const mockCollectionDao = {
     getAllCollectionUuids: jest.fn().mockResolvedValue([collectionUuid]),
-    getCollectionByUuid: jest.fn().mockResolvedValue(collection),
+    getCollectionRowByUuid: jest.fn().mockResolvedValue(collection),
   };
 
   const mockCache = {
@@ -59,7 +40,7 @@ describe('GET /collections', () => {
   it('returns 200 on successful collections retrieval', async () => {
     const response = await sendRequest();
     expect(mockCollectionDao.getAllCollectionUuids).toHaveBeenCalled();
-    expect(mockCollectionDao.getCollectionByUuid).toHaveBeenCalled();
+    expect(mockCollectionDao.getCollectionRowByUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
@@ -77,7 +58,7 @@ describe('GET /collections', () => {
   it('returns 500 on failed collection retrieval by uuid', async () => {
     sl.set('CollectionDao', {
       ...mockCollectionDao,
-      getCollectionByUuid: jest
+      getCollectionRowByUuid: jest
         .fn()
         .mockRejectedValue('failed to get collection'),
     });
@@ -86,15 +67,16 @@ describe('GET /collections', () => {
   });
 });
 
-describe('GET /collections/:uuid', () => {
+describe('GET /collection/:uuid', () => {
   const uuid = 'mockUuid';
-  const PATH = `${API_PATH}/collections/${uuid}`;
+  const PATH = `${API_PATH}/collection/${uuid}`;
 
   const mockCollectionTextUtils = {
     canViewCollection: jest.fn().mockResolvedValue(true),
   };
 
   const mockCollectionDao = {
+    collectionExists: jest.fn().mockResolvedValue(true),
     getCollectionByUuid: jest.fn().mockResolvedValue({}),
   };
 

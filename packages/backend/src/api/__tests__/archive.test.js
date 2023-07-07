@@ -3,67 +3,6 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const mockDossierInfo = {
-  name: 'mockDossier',
-  uuid: '12345',
-  totalTexts: 20,
-};
-
-const archive = {
-  uuid: 'mockUuid',
-  name: 'mockArchive',
-  parent_uuid: '4d5e6f',
-  owner: 'owner',
-  arch_locus: 'arch_locus',
-  dossiersInfo: [mockDossierInfo],
-  texts: [
-    {
-      id: 'id1',
-      uuid: 'uuid1',
-      name: 'name1',
-      hasEpigraphy: true,
-      type: 'type1',
-    },
-    {
-      id: 'id2',
-      uuid: 'uuid2',
-      name: 'name2',
-      hasEpigraphy: true,
-      type: 'type2',
-    },
-  ],
-  totalTexts: 2,
-  totalDossiers: 1,
-  bibliographyUuid: 'bibUuid',
-  descriptions: [],
-};
-
-const dossier = {
-  uuid: 'mockUuid',
-  name: 'mockDossier',
-  parent_uuid: '4d5e6f7g',
-  owner: 'owner',
-  arch_locus: 'arch_locus',
-  texts: [
-    {
-      id: 'id1',
-      uuid: 'uuid1',
-      name: 'name1',
-      hasEpigraphy: true,
-      type: 'type1',
-    },
-    {
-      id: 'id2',
-      uuid: 'uuid2',
-      name: 'name2',
-      hasEpigraphy: true,
-      type: 'type2',
-    },
-  ],
-  totalTexts: 2,
-  totalDossiers: 1,
-};
-
 describe('GET /archives', () => {
   const PATH = `${API_PATH}/archives`;
 
@@ -110,6 +49,7 @@ describe('GET /archive/:uuid', () => {
   const PATH = `${API_PATH}/archive/${uuid}`;
 
   const mockArchiveDao = {
+    archiveExists: jest.fn().mockResolvedValue(true),
     getArchiveByUuid: jest.fn().mockResolvedValue({}),
   };
 
@@ -133,6 +73,15 @@ describe('GET /archive/:uuid', () => {
     expect(response.status).toBe(200);
   });
 
+  it('returns 400 if archive does not exist', async () => {
+    sl.set('ArchiveDao', {
+      ...mockArchiveDao,
+      archiveExists: jest.fn().mockResolvedValue(false),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
   it('returns 500 on failed archive retrieval', async () => {
     sl.set('ArchiveDao', {
       getArchiveByUuid: jest.fn().mockRejectedValue('failed archive retrieval'),
@@ -147,7 +96,8 @@ describe('GET /dossier/:uuid', () => {
   const PATH = `${API_PATH}/dossier/${uuid}`;
 
   const mockArchiveDao = {
-    getDossierByUuid: jest.fn().mockResolvedValue(dossier),
+    archiveExists: jest.fn().mockResolvedValue(true),
+    getDossierByUuid: jest.fn().mockResolvedValue({}),
   };
 
   const mockCache = {
@@ -170,6 +120,15 @@ describe('GET /dossier/:uuid', () => {
     expect(response.status).toBe(200);
   });
 
+  it('returns 400 if dossier does not exist', async () => {
+    sl.set('ArchiveDao', {
+      ...mockArchiveDao,
+      archiveExists: jest.fn().mockResolvedValue(false),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
   it('returns 500 on failed dossier retrieval', async () => {
     sl.set('ArchiveDao', {
       getDossierByUuid: jest.fn().mockRejectedValue('failed dossier retrieval'),
@@ -179,10 +138,10 @@ describe('GET /dossier/:uuid', () => {
   });
 });
 
-describe('DELETE /archive/:archiveUuid/disconnect_text/:textUuid', () => {
+describe('DELETE /archive/:uuid', () => {
   const archiveUuid = 'mockUuid';
   const textUuid = 'mockTextUuid';
-  const PATH = `${API_PATH}/archive/${archiveUuid}/disconnect_text/${textUuid}`;
+  const PATH = `${API_PATH}/archive/${archiveUuid}?textUuid=${textUuid}`;
 
   const AdminUserDao = {
     getUserByUuid: jest.fn().mockResolvedValue({
@@ -191,7 +150,12 @@ describe('DELETE /archive/:archiveUuid/disconnect_text/:textUuid', () => {
   };
 
   const mockArchiveDao = {
+    archiveExists: jest.fn().mockResolvedValue(true),
     disconnectText: jest.fn().mockResolvedValue(),
+  };
+
+  const mockTextDao = {
+    textExists: jest.fn().mockResolvedValue(true),
   };
 
   const mockUtils = {
@@ -207,6 +171,7 @@ describe('DELETE /archive/:archiveUuid/disconnect_text/:textUuid', () => {
   const setup = () => {
     sl.set('UserDao', AdminUserDao);
     sl.set('ArchiveDao', mockArchiveDao);
+    sl.set('TextDao', mockTextDao);
     sl.set('utils', mockUtils);
     sl.set('cache', mockCache);
   };

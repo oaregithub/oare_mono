@@ -44,6 +44,7 @@ class SpatialUnitDao {
    * @param uuid The UUID of the spatial unit row to retrieve.
    * @param trx Knex Transaction. Optional.
    * @returns Single spatial unit row.
+   * @throws Error if no spatial unit is found with the given UUID.
    */
   private async getSpatialUnitRowByUuid(
     uuid: string,
@@ -83,6 +84,7 @@ class SpatialUnitDao {
    * @param uuid The UUID of the seal.
    * @param trx Knex Transaction. Optional.
    * @returns Complete SealCore object.
+   * @throws Error if no seal is found with the given UUID.
    */
   public async getSealCoreByUuid(
     uuid: string,
@@ -114,6 +116,7 @@ class SpatialUnitDao {
    * @param uuid The UUID of the seal.
    * @param trx Knex Transaction. Optional.
    * @returns Complete Seal object.
+   * @throws Error if no seal is found with the given UUID.
    */
   public async getSealByUuid(
     uuid: string,
@@ -140,6 +143,23 @@ class SpatialUnitDao {
     };
 
     return seal;
+  }
+
+  /**
+   * Checks if a spatial unit exists with the given UUID.
+   * @param uuid The UUID of the spatial unit.
+   * @param trx Knex Transaction. Optional.
+   * @returns Boolean indicating whether the spatial unit exists.
+   */
+  public async spatialUnitExists(
+    uuid: string,
+    trx?: Knex.Transaction
+  ): Promise<boolean> {
+    const k = trx || knex;
+
+    const row = await k('spatial_unit').first().where({ uuid });
+
+    return !!row;
   }
 
   /**

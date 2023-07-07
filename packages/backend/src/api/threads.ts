@@ -146,7 +146,7 @@ router
     }
   });
 
-router.route('/new_threads/').get(adminRoute, async (_req, res, next) => {
+router.route('/new_threads').get(adminRoute, async (_req, res, next) => {
   try {
     const ThreadsDao = sl.get('ThreadsDao');
 

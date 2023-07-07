@@ -21,9 +21,10 @@ router
     cacheMiddleware<PersonCore[]>(null),
     async (req, res, next) => {
       try {
-        const { letter } = req.params;
         const PersonDao = sl.get('PersonDao');
         const cache = sl.get('cache');
+
+        const { letter } = req.params;
 
         const personUuidsByLetter = await PersonDao.getPersonUuidsByLetterGroup(
           letter
@@ -54,12 +55,12 @@ router
       const utils = sl.get('utils');
 
       const roleUuid = (req.query.roleUuid as string) || undefined;
-      const personUuids = req.query.personsUuids as string[];
+      const personsUuids = req.query.personsUuids as string[];
       const userUuid = req.user ? req.user.uuid : null;
       const { filter } = utils.extractPagination(req.query);
 
       const occurrences = await Promise.all(
-        personUuids.map(uuid =>
+        personsUuids.map(uuid =>
           PersonDao.getPersonOccurrencesCount(
             uuid,
             userUuid,
@@ -69,7 +70,7 @@ router
         )
       );
 
-      const response: TextOccurrencesCountResponseItem[] = personUuids.map(
+      const response: TextOccurrencesCountResponseItem[] = personsUuids.map(
         (uuid, idx) => ({
           uuid,
           count: occurrences[idx],

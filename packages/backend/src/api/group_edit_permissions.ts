@@ -36,10 +36,7 @@ router
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
-  });
-
-router
-  .route('/group_edit_permissions/:groupId')
+  })
   .post(adminRoute, async (req, res, next) => {
     try {
       const groupId = Number(req.params.groupId);
@@ -60,7 +57,7 @@ router
       const textsExist = await Promise.all(
         uuids.map(uuid => TextDao.textExists(uuid))
       );
-      if (!textsExist.includes(false)) {
+      if (textsExist.includes(false)) {
         next(new HttpBadRequest('One or more texts do not exist'));
         return;
       }

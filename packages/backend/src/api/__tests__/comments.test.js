@@ -3,26 +3,10 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-describe('comments api test', () => {
-  const commentsUuid = 'commentUuid';
-  const commentsUpdateDeleteUuid = 'commentUpdateDeleteUuid';
-  const MockCommentsDao = {
-    insert: jest.fn().mockResolvedValue(commentsUuid),
-    updateDelete: jest.fn().mockResolvedValue(commentsUpdateDeleteUuid),
-  };
+describe('POST /comments', () => {
+  const PATH = `${API_PATH}/comments`;
 
-  const threadsUuid = 'threadUuid';
-  const MockThreadsDao = {
-    insert: jest.fn().mockResolvedValue(threadsUuid),
-  };
-
-  const MockUserDao = {
-    getUserByUuid: jest.fn().mockResolvedValue({
-      isAdmin: true,
-    }),
-  };
-
-  const MockPermissionsDao = {
+  const mockPermissionsDao = {
     getUserPermissions: jest.fn().mockResolvedValue([
       {
         name: 'ADD_COMMENTS',
@@ -30,118 +14,133 @@ describe('comments api test', () => {
     ]),
   };
 
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      isAdmin: false,
+    }),
+  };
+
+  const mockCommentsDao = {
+    createComment: jest.fn().mockResolvedValue(),
+  };
+
+  const mockThreadsDao = {
+    threadExists: jest.fn().mockResolvedValue(true),
+  };
+
   const setup = () => {
-    sl.set('CommentsDao', MockCommentsDao);
-    sl.set('ThreadsDao', MockThreadsDao);
-    sl.set('UserDao', MockUserDao);
-    sl.set('PermissionsDao', MockPermissionsDao);
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('CommentsDao', mockCommentsDao);
+    sl.set('ThreadsDao', mockThreadsDao);
+    sl.set('UserDao', mockUserDao);
   };
 
   beforeEach(setup);
 
-  const validComment = {
-    uuid: 'uuid',
-    threadUuid: 'threadUuid',
-    userUuid: 'userUuid',
-    createdAt: null,
-    deleted: false,
-    text: 'text',
-  };
+  const sendRequest = () =>
+    request(app)
+      .post(PATH)
+      .set('Authorization', 'token')
+      .send({ threadUuid: 'threadUuid', comment: 'comment' });
 
-  const validThread = {
-    uuid: 'uuid',
-    referenceUuid: 'wordUuid',
-    status: 'New',
-    route: 'route',
-  };
-
-  const doesNotExistThread = {
-    uuid: null,
-    referenceUuid: 'wordUuid',
-    status: 'New',
-    route: 'route',
-  };
-
-  const getPayload = ({ overrideComment, overrideThread } = {}) => {
-    const comment = overrideComment || validComment;
-    const thread = overrideThread || validThread;
-
-    return { comment, thread };
-  };
-
-  describe('POST /comments', () => {
-    const PATH = `${API_PATH}/comments`;
-    const sendRequest = async ({
-      overrideComment,
-      overrideThread,
-      cookie = true,
-    } = {}) => {
-      const req = request(app)
-        .post(PATH)
-        .send(getPayload({ overrideComment, overrideThread }));
-      return cookie ? req.set('Authorization', 'token') : req;
-    };
-
-    it('returns successful 201, comment and thread info', async () => {
-      const response = await sendRequest({
-        overrideThread: doesNotExistThread,
-      });
-      expect(response.status).toBe(201);
-      expect(JSON.parse(response.text)).toEqual(commentsUuid);
-    });
-
-    it('returns 201 successful, thread already exists', async () => {
-      const response = await sendRequest();
-      expect(response.status).toBe(201);
-      expect(MockThreadsDao.insert).not.toHaveBeenCalled();
-      expect(MockCommentsDao.insert).toHaveBeenCalled();
-    });
-
-    it('returns 401 on non-logged in user', async () => {
-      const response = await sendRequest({
-        cookie: false,
-      });
-      expect(response.status).toBe(401);
-    });
-
-    it('returns 500 on failed inserting comment', async () => {
-      sl.set('CommentsDao', {
-        insert: jest.fn().mockRejectedValue('Error inserting a comment'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
+  it('returns 201 on comment creation', async () => {
+    const response = await sendRequest();
+    expect(mockThreadsDao.threadExists).toHaveBeenCalled();
+    expect(mockCommentsDao.createComment).toHaveBeenCalled();
+    expect(response.status).toBe(201);
   });
 
-  describe('DELETE /comments/:uuid', () => {
-    const PATH = `${API_PATH}/comments/testUuid`;
+  it('returns 400 if thread does not exist', async () => {
+    sl.set('ThreadsDao', {
+      threadExists: jest.fn().mockResolvedValue(false),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
 
-    const sendRequest = async ({ cookie = true } = {}) => {
-      const req = request(app).delete(PATH);
-      return cookie ? req.set('Authorization', 'token') : req;
-    };
+  it('returns 401 on non-logged in user', async () => {
+    const response = await request(app).post(PATH).send({});
+    expect(response.status).toBe(401);
+  });
 
-    it('returns 200 upon successfully deleted comment', async () => {
-      const response = await sendRequest();
-      expect(response.status).toBe(204);
+  it('returns 403 if user does not have permission', async () => {
+    sl.set('PermissionsDao', {
+      getUserPermissions: jest.fn().mockResolvedValue([]),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 on failed inserting comment', async () => {
+    sl.set('CommentsDao', {
+      createComment: jest.fn().mockRejectedValue('Error inserting a comment'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('DELETE /comments/:uuid', () => {
+  const commentUuid = 'testUuid';
+  const PATH = `${API_PATH}/comments/${commentUuid}`;
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'ADD_COMMENTS',
+      },
+    ]),
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      isAdmin: false,
+    }),
+  };
+
+  const mockCommentsDao = {
+    commentExists: jest.fn().mockResolvedValue(true),
+    markAsDeleted: jest.fn().mockResolvedValue(),
+  };
+
+  const setup = () => {
+    sl.set('PermissionsDao', mockPermissionsDao);
+    sl.set('CommentsDao', mockCommentsDao);
+    sl.set('UserDao', mockUserDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = async () =>
+    request(app).delete(PATH).set('Authorization', 'token');
+
+  it('returns 204 upon successfully deleted comment', async () => {
+    const response = await sendRequest();
+    expect(mockCommentsDao.markAsDeleted).toHaveBeenCalled();
+    expect(response.status).toBe(204);
+  });
+
+  it('returns 400 if comment does not exist', async () => {
+    sl.set('CommentsDao', {
+      ...mockCommentsDao,
+      commentExists: jest.fn().mockResolvedValue(false),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 500 when unable to delete a comment', async () => {
+    sl.set('CommentsDao', {
+      ...mockCommentsDao,
+      markAsDeleted: jest.fn().mockRejectedValue('Error deleting a comment'),
     });
 
-    it('returns 500 when unable to delete a comment', async () => {
-      sl.set('CommentsDao', {
-        ...MockCommentsDao,
-        updateDelete: jest.fn().mockRejectedValue('Error deleting a comment'),
-      });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
 
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 401 when user is not logged-in', async () => {
-      setup();
-      const response = await sendRequest({
-        cookie: false,
-      });
-      expect(response.status).toBe(401);
-    });
+  it('returns 401 when user is not logged-in', async () => {
+    const response = await request(app).delete(PATH);
+    expect(response.status).toBe(401);
   });
 });

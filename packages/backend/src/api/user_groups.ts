@@ -112,7 +112,7 @@ router
       await Promise.all(
         userUuids.map(uuid => UserGroupDao.removeUserFromGroup(groupId, uuid))
       );
-      res.end();
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

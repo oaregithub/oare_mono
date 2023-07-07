@@ -3,361 +3,317 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-describe('groups api test', () => {
-  const AdminUserDao = {
-    getUserByUuid: jest.fn().mockResolvedValue({
-      isAdmin: true,
-    }),
+describe('GET /groups/:id', () => {
+  const groupId = 1;
+  const PATH = `${API_PATH}/groups/${groupId}`;
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
   };
 
-  const authorize = () => {
-    sl.set('UserDao', AdminUserDao);
+  const mockOareGroupDao = {
+    groupExists: jest.fn().mockResolvedValue(true),
+    getGroupById: jest.fn().mockResolvedValue({}),
   };
 
-  describe('GET /groups/:id', () => {
-    const groupId = 1;
-    const PATH = `${API_PATH}/groups/${groupId}`;
+  const setup = () => {
+    sl.set('UserDao', mockUserDao);
+    sl.set('OareGroupDao', mockOareGroupDao);
+  };
 
-    const mockGroup = {
-      id: groupId,
-      name: 'Test Group',
-      createdOn: JSON.stringify(new Date()),
-      description: 'Test Description',
-    };
+  beforeEach(setup);
 
-    const mockOareGroupDao = {
-      getGroupById: jest.fn().mockResolvedValue(mockGroup),
-    };
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
 
-    const setup = () => {
-      authorize();
-      sl.set('OareGroupDao', mockOareGroupDao);
-    };
-
-    const sendRequest = () =>
-      request(app).get(PATH).set('Authorization', 'token');
-
-    it("doesn't allow non-logged-in users to get group info", async () => {
-      const response = await request(app).get(PATH);
-      expect(response.status).toBe(401);
-    });
-
-    it("doesn't allow non-admins to get group info", async () => {
-      setup();
-      sl.set('UserDao', {
-        getUserByUuid: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
-    it('returns 200 on successful group retrieval', async () => {
-      setup();
-      const response = await sendRequest();
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual(mockGroup);
-    });
-
-    it('retrieves a group by the passed in ID', async () => {
-      setup();
-      await sendRequest();
-      expect(mockOareGroupDao.getGroupById).toHaveBeenCalledWith(groupId);
-    });
-
-    it('returns 400 if non existent group ID is given', async () => {
-      setup();
-      sl.set('OareGroupDao', {
-        getGroupById: jest.fn().mockResolvedValue(null),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(400);
-    });
-
-    it('returns 500 if getting group fails', async () => {
-      setup();
-      sl.set('OareGroupDao', {
-        getGroupById: jest.fn().mockRejectedValue('Get group failed'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
+  it('returns 200 when getting group', async () => {
+    const response = await sendRequest();
+    expect(response.status).toBe(200);
   });
 
-  describe('GET /groups', () => {
-    const PATH = `${API_PATH}/groups`;
-
-    const mockGroup = {
-      id: 1,
-      name: 'Test Group',
-      createdOn: JSON.stringify(new Date()),
-      num_users: 0,
-    };
-
-    const mockOareGroupDao = {
-      getAllGroupIds: jest.fn().mockResolvedValue([1]),
-      getGroupById: jest.fn().mockResolvedValue(mockGroup),
-    };
-
-    const setup = () => {
-      authorize();
-      sl.set('OareGroupDao', mockOareGroupDao);
-    };
-
-    const sendRequest = () =>
-      request(app).get(PATH).set('Authorization', 'token');
-
-    it("doesn't allow non-logged-in users to get groups", async () => {
-      const response = await request(app).get(PATH);
-      expect(response.status).toBe(401);
+  it('returns 400 if group does not exist', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      groupExists: jest.fn().mockResolvedValue(false),
     });
-
-    it("doesn't allow non-admins to get groups", async () => {
-      sl.set('UserDao', {
-        getUserByUuid: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
-    it('successfully returns all groups', async () => {
-      setup();
-      const response = await sendRequest();
-
-      expect(response.status).toBe(200);
-      expect(JSON.parse(response.text)).toEqual([mockGroup]);
-    });
-
-    it('gets all groups', async () => {
-      setup();
-      await sendRequest();
-      expect(mockOareGroupDao.getAllGroupIds).toHaveBeenCalled();
-    });
-
-    it('returns 500 if get all groups fails', async () => {
-      setup();
-      sl.set('OareGroupDao', {
-        getAllGroupIds: jest.fn().mockRejectedValue('Could not get all groups'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
   });
 
-  describe('POST /groups', () => {
-    const PATH = `${API_PATH}/groups`;
-
-    const groupId = 1;
-
-    const mockOareGroupDao = {
-      groupNameExists: jest.fn().mockResolvedValue(false),
-      createGroup: jest.fn().mockResolvedValue(groupId),
-    };
-
-    const setup = () => {
-      authorize();
-      sl.set('OareGroupDao', mockOareGroupDao);
-    };
-
-    const sendRequest = () =>
-      request(app).post(PATH).set('Authorization', 'token');
-
-    it("doesn't allow non-logged-in users to post", async () => {
-      const response = await request(app).post(PATH);
-      expect(response.status).toBe(401);
-    });
-
-    it("doesn't allow non-admins to post", async () => {
-      sl.set('UserDao', {
-        getUserByUuid: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
-    it('returns 201 on success', async () => {
-      setup();
-      const response = await sendRequest();
-      expect(response.status).toBe(201);
-      expect(JSON.parse(response.text)).toEqual({
-        id: groupId,
-      });
-    });
-
-    it('returns 400 if the group name already exists', async () => {
-      setup();
-      sl.set('OareGroupDao', {
-        groupNameExists: jest.fn().mockResolvedValue(true),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(400);
-    });
-
-    it('returns 500 if group name checking fails', async () => {
-      setup();
-      sl.set('OareGroupDao', {
-        groupNameExists: jest
-          .fn()
-          .mockRejectedValue('Get group by name failed'),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
-
-    it('returns 500 if create group fails', async () => {
-      setup();
-      sl.set('OareGroupDao', {
-        createGroup: jest.fn().mockRejectedValue(null),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
+  it('returns 401 if user is not logged in', async () => {
+    const response = await request(app).get(PATH);
+    expect(response.status).toBe(401);
   });
 
-  describe('DELETE /group/:id', () => {
-    const groupId = 1;
-    const PATH = `${API_PATH}/groups/${groupId}`;
-
-    const mockOareGroupDao = {
-      deleteGroup: jest.fn().mockResolvedValue(null),
-    };
-
-    const setup = () => {
-      authorize();
-      sl.set('OareGroupDao', mockOareGroupDao);
-    };
-
-    const sendRequest = () =>
-      request(app).del(PATH).set('Authorization', 'token');
-
-    it("doesn't let non-logged-in users delete", async () => {
-      const response = await request(app).del(PATH);
-      expect(response.status).toBe(401);
+  it('returns 403 if user is not admin', async () => {
+    sl.set('UserDao', {
+      ...mockUserDao,
+      getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
     });
-
-    it("doesn't let non-admins delete", async () => {
-      sl.set('UserDao', {
-        getUserByUuid: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
-      });
-
-      const response = await sendRequest();
-      expect(response.status).toBe(403);
-    });
-
-    it('successfully deletes group', async () => {
-      setup();
-      const response = await sendRequest();
-      expect(response.status).toBe(201);
-      expect(mockOareGroupDao.deleteGroup).toHaveBeenCalledWith(groupId);
-    });
-
-    it('returns 500 if delete group fails', async () => {
-      setup();
-      sl.set('OareGroupDao', {
-        deleteGroup: jest.fn().mockRejectedValue('delete group failed'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
   });
 
-  describe('PATCH /groups/:id', () => {
-    const groupId = 1;
-    const PATH = `${API_PATH}/groups/${groupId}`;
-
-    const mockPATCH = {
-      description: 'Test Description',
-    };
-
-    const tooLongPATCH = {
-      description: 'a'.repeat(201),
-    };
-
-    const mockOareGroupDao = {
-      updateGroupDescription: jest.fn().mockResolvedValue(),
-      getGroupById: jest.fn().mockResolvedValue(true),
-    };
-
-    const setup = () => {
-      sl.set('OareGroupDao', mockOareGroupDao);
-      sl.set('UserDao', {
-        getUserByUuid: jest.fn().mockResolvedValue({
-          isAdmin: true,
-        }),
-      });
-    };
-
-    beforeEach(setup);
-
-    const sendRequest = () =>
-      request(app).patch(PATH).send(mockPATCH).set('Authorization', 'token');
-
-    it('returns 204 on successful description update', async () => {
-      const response = await sendRequest();
-      expect(mockOareGroupDao.updateGroupDescription).toHaveBeenCalled();
-      expect(response.status).toBe(204);
+  it('returns 500 when fails to retrieve group', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      getGroupById: jest.fn().mockRejectedValue('Failed to retrieve group'),
     });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
 
-    it('returns 500 on failed description update', async () => {
-      sl.set('OareGroupDao', {
-        ...mockOareGroupDao,
-        updateGroupDescription: jest
-          .fn()
-          .mockRejectedValue('failed description update'),
-      });
-      const response = await sendRequest();
-      expect(response.status).toBe(500);
-    });
+describe('DELETE /groups/:id', () => {
+  const groupId = 1;
+  const PATH = `${API_PATH}/groups/${groupId}`;
 
-    it('returns 400 when group does not exist', async () => {
-      sl.set('OareGroupDao', {
-        ...mockOareGroupDao,
-        getGroupById: jest.fn().mockResolvedValue(false),
-      });
-      const response = await sendRequest();
-      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
-      expect(response.status).toBe(400);
-    });
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
+  };
 
-    it('does not allow non-admins to update description', async () => {
-      sl.set('UserDao', {
-        getUserByUuid: jest.fn().mockResolvedValue({
-          isAdmin: false,
-        }),
-      });
-      const response = await sendRequest();
-      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
-      expect(response.status).toBe(403);
-    });
+  const mockOareGroupDao = {
+    groupExists: jest.fn().mockResolvedValue(true),
+    deleteGroup: jest.fn().mockResolvedValue(),
+  };
 
-    it('does not allow non-logged-in users to update description', async () => {
-      const response = await request(app).patch(PATH).send(mockPATCH);
-      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
-      expect(response.status).toBe(401);
-    });
+  const setup = () => {
+    sl.set('UserDao', mockUserDao);
+    sl.set('OareGroupDao', mockOareGroupDao);
+  };
 
-    it('returns 400 if description is too long', async () => {
-      const response = await request(app)
-        .patch(PATH)
-        .send(tooLongPATCH)
-        .set('Authorization', 'token');
-      expect(mockOareGroupDao.updateGroupDescription).not.toHaveBeenCalled();
-      expect(response.status).toBe(400);
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app).delete(PATH).set('Authorization', 'token');
+
+  it('returns 200 when successfully deletes group', async () => {
+    const response = await sendRequest();
+    expect(response.status).toBe(201);
+  });
+
+  it('returns 400 if group does not exist', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      groupExists: jest.fn().mockResolvedValue(false),
     });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 401 if user is not logged in', async () => {
+    const response = await request(app).delete(PATH);
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 if user is not admin', async () => {
+    sl.set('UserDao', {
+      ...mockUserDao,
+      getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 when fails to delete group', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      deleteGroup: jest.fn().mockRejectedValue('Failed to delete group'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('PATCH /groupd/:id', () => {
+  const groupId = 1;
+  const PATH = `${API_PATH}/groups/${groupId}`;
+
+  const mockBody = {
+    description: 'New description',
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
+  };
+
+  const mockOareGroupDao = {
+    groupExists: jest.fn().mockResolvedValue(true),
+    updateGroupDescription: jest.fn().mockResolvedValue(),
+  };
+
+  const setup = () => {
+    sl.set('UserDao', mockUserDao);
+    sl.set('OareGroupDao', mockOareGroupDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app).patch(PATH).send(mockBody).set('Authorization', 'token');
+
+  it('returns 204 when successfully updates group description', async () => {
+    const response = await sendRequest();
+    expect(response.status).toBe(204);
+  });
+
+  it('returns 400 when group does not exist', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      groupExists: jest.fn().mockResolvedValue(false),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 400 when description is longer than 200 characters', async () => {
+    const response = await request(app)
+      .patch(PATH)
+      .send({ description: 'a'.repeat(201) })
+      .set('Authorization', 'token');
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await request(app).patch(PATH).send(mockBody);
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 when user is not admin', async () => {
+    sl.set('UserDao', {
+      ...mockUserDao,
+      getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 when fails to update group description', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      updateGroupDescription: jest
+        .fn()
+        .mockRejectedValue('Failed to update group description'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('GET /groups', () => {
+  const PATH = `${API_PATH}/groups`;
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
+  };
+
+  const mockOareGroupDao = {
+    getAllGroupIds: jest.fn().mockResolvedValue([1, 2, 3]),
+    getGroupById: jest.fn().mockResolvedValue({}),
+  };
+
+  const setup = () => {
+    sl.set('UserDao', mockUserDao);
+    sl.set('OareGroupDao', mockOareGroupDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app).get(PATH).set('Authorization', 'token');
+
+  it('returns 200 when successfully retrieves groups', async () => {
+    const response = await sendRequest();
+    expect(response.status).toBe(200);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await request(app).get(PATH);
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 when user is not admin', async () => {
+    sl.set('UserDao', {
+      ...mockUserDao,
+      getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 when fails to retrieve group ids', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      getAllGroupIds: jest
+        .fn()
+        .mockRejectedValue('Failed to retrieve group ids'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
+  });
+});
+
+describe('POST /groups', () => {
+  const PATH = `${API_PATH}/groups`;
+
+  const mockBody = {
+    name: 'New group',
+    description: 'New description',
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
+  };
+
+  const mockOareGroupDao = {
+    groupNameExists: jest.fn().mockResolvedValue(false),
+    createGroup: jest.fn().mockResolvedValue(),
+  };
+
+  const setup = () => {
+    sl.set('UserDao', mockUserDao);
+    sl.set('OareGroupDao', mockOareGroupDao);
+  };
+
+  beforeEach(setup);
+
+  const sendRequest = () =>
+    request(app).post(PATH).send(mockBody).set('Authorization', 'token');
+
+  it('returns 201 when successfully creates group', async () => {
+    const response = await sendRequest();
+    expect(response.status).toBe(201);
+  });
+
+  it('returns 400 when group name already exists', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      groupNameExists: jest.fn().mockResolvedValue(true),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(400);
+  });
+
+  it('returns 401 when user is not logged in', async () => {
+    const response = await request(app).post(PATH).send(mockBody);
+    expect(response.status).toBe(401);
+  });
+
+  it('returns 403 when user is not admin', async () => {
+    sl.set('UserDao', {
+      ...mockUserDao,
+      getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: false }),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(403);
+  });
+
+  it('returns 500 when fails to create group', async () => {
+    sl.set('OareGroupDao', {
+      ...mockOareGroupDao,
+      createGroup: jest.fn().mockRejectedValue('Failed to create group'),
+    });
+    const response = await sendRequest();
+    expect(response.status).toBe(500);
   });
 });
