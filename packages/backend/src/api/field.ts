@@ -5,8 +5,6 @@ import { FieldPayload, FieldType } from '@oare/types';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

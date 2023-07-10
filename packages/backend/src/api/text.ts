@@ -8,8 +8,6 @@ import {
   UpdateTextTransliterationStatusPayload,
 } from '@oare/types';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

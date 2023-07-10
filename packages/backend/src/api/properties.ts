@@ -14,8 +14,6 @@ import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import _ from 'lodash';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

@@ -6,8 +6,6 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import { archiveFilter, archivesFilter, dossierFilter } from '@/cache/filters';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

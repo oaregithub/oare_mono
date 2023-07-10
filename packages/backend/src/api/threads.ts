@@ -12,8 +12,6 @@ import {
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import adminRoute from '@/middlewares/router/adminRoute';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

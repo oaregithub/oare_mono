@@ -7,8 +7,6 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

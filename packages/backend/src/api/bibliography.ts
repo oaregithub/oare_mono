@@ -6,8 +6,6 @@ import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import cacheMiddleware from '@/middlewares/router/cache';
 import { bibliographiesFilter, bibliographyFilter } from '@/cache/filters';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

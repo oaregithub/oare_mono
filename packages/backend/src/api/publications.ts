@@ -5,8 +5,6 @@ import { Publication } from '@oare/types';
 import cacheMiddleware from '@/middlewares/router/cache';
 import { publicationsFilter } from '@/cache/filters';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

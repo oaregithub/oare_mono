@@ -6,8 +6,6 @@ import firebase from '@/firebase';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 const router = express.Router();
 
 router.route('/register').post(async (req, res, next) => {

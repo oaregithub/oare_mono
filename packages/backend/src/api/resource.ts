@@ -6,8 +6,6 @@ import express from 'express';
 import fileUpload from 'express-fileupload';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

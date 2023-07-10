@@ -4,8 +4,6 @@ import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 import { HttpInternalError, HttpBadRequest, HttpForbidden } from '@/exceptions';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 const router = express.Router();
 
 router.route('/users').get(adminRoute, async (_req, res, next) => {

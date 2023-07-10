@@ -10,8 +10,6 @@ import {
 } from '@oare/types';
 import { personFilter } from '@/cache/filters';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

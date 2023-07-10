@@ -6,8 +6,6 @@ import { HttpInternalError } from '@/exceptions';
 import { PeriodResponse } from '@oare/types';
 import { periodsFilter } from '@/cache/filters';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

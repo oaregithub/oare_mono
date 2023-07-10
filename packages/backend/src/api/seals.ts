@@ -12,8 +12,6 @@ import { sealFilter, sealListFilter } from '@/cache/filters';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { v4 } from 'uuid';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

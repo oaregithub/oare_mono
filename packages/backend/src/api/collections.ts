@@ -6,8 +6,6 @@ import cacheMiddleware from '@/middlewares/router/cache';
 import { Collection, CollectionRow } from '@oare/types';
 import { collectionTextsFilter, collectionFilter } from '@/cache/filters';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

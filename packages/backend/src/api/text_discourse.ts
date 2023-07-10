@@ -6,8 +6,6 @@ import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { v4 } from 'uuid';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

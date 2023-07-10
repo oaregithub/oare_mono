@@ -4,8 +4,6 @@ import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
 import { AddDenylistAllowlistPayload, DenylistAllowlist } from '@oare/types';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

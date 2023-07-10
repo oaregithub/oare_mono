@@ -4,8 +4,6 @@ import sl from '@/serviceLocator';
 import { UpdateProfilePayload } from '@oare/types';
 import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
-// COMPLETE
-
 const router = express.Router();
 
 router.route('/profile').patch(authenticatedRoute, async (req, res, next) => {

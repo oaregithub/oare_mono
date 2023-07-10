@@ -4,8 +4,6 @@ import sl from '@/serviceLocator';
 import adminRoute from '@/middlewares/router/adminRoute';
 import { UpdatePermissionPayload, PermissionName } from '@oare/types';
 
-// COMPLETE
-
 const router = express.Router();
 
 router.route('/user_permissions').get(async (req, res, next) => {

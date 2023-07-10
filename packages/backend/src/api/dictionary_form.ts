@@ -9,8 +9,6 @@ import {
   convertAppliedPropsToItemProps,
 } from '@oare/oare';
 
-// COMPLETE
-
 const router = express.Router();
 
 router

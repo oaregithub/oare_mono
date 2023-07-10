@@ -2,8 +2,6 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import { EnvironmentInfo } from '@oare/types';
 
-// COMPLETE
-
 const router = express.Router();
 
 router.route('/environment').get(async (_req, res, next) => {
