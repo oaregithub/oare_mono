@@ -11,8 +11,6 @@ import { Knex } from 'knex';
 import { v4 } from 'uuid';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class ErrorsDao {
   /**
    * Logs a new error by inserting a row into the errors table

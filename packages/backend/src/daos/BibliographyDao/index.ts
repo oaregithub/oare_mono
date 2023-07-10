@@ -3,8 +3,6 @@ import knex from '@/connection';
 import { Bibliography, BibliographyRow, Citation, LinkItem } from '@oare/types';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class BibliographyDao {
   /**
    * Retreives a bibliography row by UUID

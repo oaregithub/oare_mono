@@ -2,8 +2,6 @@ import knex from '@/connection';
 import { TextMarkupRow } from '@oare/types';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class TextMarkupDao {
   /**
    * Retrievs a list of text markup UUIDs for a given reference UUID.

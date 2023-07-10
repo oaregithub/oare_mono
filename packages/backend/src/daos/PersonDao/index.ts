@@ -13,8 +13,6 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 
-// COMPLETE
-
 class PersonDao {
   /**
    * Retrieves the number of occurrences of a person in texts.

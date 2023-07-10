@@ -2,8 +2,6 @@ import { Knex } from 'knex';
 import knex from '@/connection';
 import { QuarantineTextRow } from '@oare/types';
 
-// COMPLETE
-
 class QuarantineTextDao {
   /**
    * Quarantines a text by inserting a row into the quarantine_text table.

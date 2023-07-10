@@ -9,8 +9,6 @@ import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 import { AkkadianLetterGroupsUpper } from '@oare/oare';
 
-// COMPLETE
-
 class DictionaryWordDao {
   /**
    * Retrieves a list of dictionary word UUIDs that have the specified type and begin with the specified letter group.

@@ -1,8 +1,6 @@
 import knex from '@/connection';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class PageContentDao {
   /**
    * Retrieves the content for a given route name.

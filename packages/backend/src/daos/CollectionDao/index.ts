@@ -3,8 +3,6 @@ import { CollectionRow, Collection } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class CollectionDao {
   /**
    * Retrieves a collection row by its UUID.

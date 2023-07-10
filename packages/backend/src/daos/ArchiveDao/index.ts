@@ -3,8 +3,6 @@ import { Archive, ArchiveRow, Dossier } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class ArchiveDao {
   /**
    * Retrieves an archive row by its UUID.

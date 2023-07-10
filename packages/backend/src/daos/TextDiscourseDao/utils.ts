@@ -1,7 +1,5 @@
 import { TextDiscourse, TextDiscourseUnit } from '@oare/types';
 
-// COMPLETE
-
 /**
  * Nests text discourses into a tree structure.
  * @param discourseRows Text discourses to nest.

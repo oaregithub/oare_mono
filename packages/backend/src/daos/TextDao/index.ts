@@ -3,8 +3,6 @@ import { Text, TextRow, LinkItem } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class TextDao {
   /**
    * Retrieves a text by its UUID.

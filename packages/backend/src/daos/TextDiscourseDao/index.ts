@@ -11,8 +11,6 @@ import sl from '@/serviceLocator';
 import _ from 'lodash';
 import { createNestedDiscourses, setDiscourseReading } from './utils';
 
-// COMPLETE
-
 class TextDiscourseDao {
   /**
    * Updates the spelling UUID of a text_discourse row.

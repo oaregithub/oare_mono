@@ -3,8 +3,6 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class OareGroupDao {
   /**
    * Checks if a group with the given name exists.

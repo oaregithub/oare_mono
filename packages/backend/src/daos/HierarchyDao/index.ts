@@ -13,8 +13,6 @@ import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class HierarchyDao {
   /**
    * Base query for retrieving hierarchy rows for building a tree.

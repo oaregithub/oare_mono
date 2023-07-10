@@ -3,8 +3,6 @@ import { Note, NoteRow } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class NoteDao {
   /**
    * Retrieves a single note row by UUID.

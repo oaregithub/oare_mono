@@ -2,8 +2,6 @@ import knex from '@/connection';
 import { SearchType } from '@oare/types';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class SearchFailureDao {
   /**
    * Inserts a new row into the `search_failure` table. Used to track searches that returned no results.

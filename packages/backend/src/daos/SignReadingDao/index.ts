@@ -3,8 +3,6 @@ import { SignReadingRow, Sign, SignReading } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class SignReadingDao {
   /**
    * Checks if a sign reading exists

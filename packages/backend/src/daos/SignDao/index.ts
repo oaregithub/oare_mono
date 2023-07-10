@@ -3,8 +3,6 @@ import { SignRow, Sign } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class SignDao {
   /**
    * Constructs a complete Sign object for the given UUID.

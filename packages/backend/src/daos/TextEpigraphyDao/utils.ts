@@ -1,5 +1,7 @@
 import { normalizeFraction, normalizeSign, normalizeNumber } from '@oare/oare';
 
+// FIXME
+
 export const formattedSearchCharacter = (char: string): string[] => {
   // Formats fractions
   char = normalizeFraction(char);

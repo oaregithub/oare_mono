@@ -2,8 +2,6 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import { SignOrgRow } from '@oare/types';
 
-// COMPLETE
-
 class SignOrgDao {
   /**
    * Retrieves all rows from the `sign_org` table by reference UUID.

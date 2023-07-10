@@ -3,8 +3,6 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class UserDao {
   /**
    * Checks to see if a user with the given email exists.

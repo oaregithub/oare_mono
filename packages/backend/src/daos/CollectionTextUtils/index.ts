@@ -1,8 +1,6 @@
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class CollectionTextUtils {
   /**
    * Checks if a given user can view a given text.

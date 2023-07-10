@@ -10,8 +10,6 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class PeriodsDao {
   /**
    * Retrieves a period row by UUID.

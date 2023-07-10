@@ -3,8 +3,6 @@ import { ItemPropertyRow, ItemProperty } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class ItemPropertiesDao {
   /**
    * Inserts a single item property row.

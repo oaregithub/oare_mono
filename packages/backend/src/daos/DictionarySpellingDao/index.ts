@@ -4,8 +4,6 @@ import { Knex } from 'knex';
 import { spellingHtmlReading } from '@oare/oare';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class DictionarySpellingDao {
   /**
    * Updates the spelling of a spelling. This also updates the explicit spelling.

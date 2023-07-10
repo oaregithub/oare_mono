@@ -10,8 +10,6 @@ import { v4 } from 'uuid';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 
-// COMPLETE
-
 class ThreadsDao {
   /**
    * Creates a new comment thread.

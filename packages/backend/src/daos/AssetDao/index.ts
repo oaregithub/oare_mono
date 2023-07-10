@@ -2,8 +2,6 @@ import { LinkItem } from '@oare/types';
 import { Knex } from 'knex';
 import knex from '@/connection';
 
-// COMPLETE
-
 class AssetDao {
   /**
    * Searches for assets by name or UUID. Used for autocomplete when connecting link properties.

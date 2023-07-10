@@ -3,8 +3,6 @@ import { Publication } from '@oare/types';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class PublicationDao {
   /**
    * Retrieves the UUIDs of all texts in a publication.

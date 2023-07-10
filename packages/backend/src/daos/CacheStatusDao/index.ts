@@ -1,8 +1,6 @@
 import knex from '@/connection';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 interface CacheStatusRow {
   disableExpires: Date;
 }

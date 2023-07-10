@@ -11,8 +11,6 @@ import knex from '@/connection';
 import sl from '@/serviceLocator';
 import AWS from 'aws-sdk';
 
-// COMPLETE
-
 class SpatialUnitDao {
   /**
    * Searches for spatial units by name or UUID. Used for autocomplete when connecting link properties.

@@ -3,8 +3,6 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import { FieldRow, FieldType } from '@oare/types';
 
-// COMPLETE
-
 class FieldDao {
   /**
    * Retreieves a singled field row by its UUID.

@@ -5,8 +5,6 @@ import { ResourceRow, LinkRow, Image, CitationUrls } from '@oare/types';
 import { Knex } from 'knex';
 import axios from 'axios';
 
-// COMPLETE
-
 class ResourceDao {
   /**
    * Calculates the relative page and plate offsets for a PDF resource.

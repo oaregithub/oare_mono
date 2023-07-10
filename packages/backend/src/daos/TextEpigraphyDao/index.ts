@@ -5,8 +5,6 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { convertSideNumberToSide } from '@oare/oare';
 
-// COMPLETE
-
 class TextEpigraphyDao {
   /**
    * Retrieves a list of epigraphy UUIDs associated with a given text UUID.

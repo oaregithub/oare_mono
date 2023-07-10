@@ -3,8 +3,6 @@ import sl from '@/serviceLocator';
 import { DenylistAllowlistType } from '@oare/types';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class PublicDenylistDao {
   /**
    * Retrieves the public denylist for the given type.

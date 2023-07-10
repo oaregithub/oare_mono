@@ -2,8 +2,6 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import { v4 } from 'uuid';
 
-// COMPLETE
-
 class AliasDao {
   /**
    * Retrieves a list of alias names for a given reference UUID.

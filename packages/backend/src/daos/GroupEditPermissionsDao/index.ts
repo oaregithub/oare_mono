@@ -2,8 +2,6 @@ import knex from '@/connection';
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class GroupEditPermissionsDao {
   /**
    * Retrieves the UUIDs of all texts that are editable by the given group.

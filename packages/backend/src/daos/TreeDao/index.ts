@@ -2,8 +2,6 @@ import knex from '@/connection';
 import { TreeRow } from '@oare/types';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class TreeDao {
   /**
    * Inserts a tree row into the database.

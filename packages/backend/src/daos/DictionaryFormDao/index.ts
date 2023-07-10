@@ -7,8 +7,6 @@ import {
 import sl from '@/serviceLocator';
 import { Knex } from 'knex';
 
-// COMPLETE
-
 class DictionaryFormDao {
   /**
    * Updates the spelling of a given form. This is the `form` column.
