@@ -26,9 +26,6 @@ import quarantine from '@/api/quarantine';
 import register from '@/api/register';
 import seals from '@/api/seals';
 import search from '@/api/search';
-import searchDictionary from '@/api/search_dictionary';
-import searchNames from '@/api/search_names';
-import searchWordsTexts from '@/api/search_words_texts';
 import signReading from '@/api/sign_reading';
 import text from '@/api/text';
 import textDiscourse from '@/api/text_discourse';
@@ -74,9 +71,6 @@ export default (app: Express) => {
     register,
     seals,
     search,
-    searchDictionary,
-    searchNames,
-    searchWordsTexts,
     signReading,
     text,
     textDiscourse,

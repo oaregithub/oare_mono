@@ -48,6 +48,7 @@ import ThreadsDao from '@/daos/ThreadsDao';
 import TreeDao from '@/daos/TreeDao';
 import UserDao from '@/daos/UserDao';
 import UserGroupDao from '@/daos/UserGroupDao';
+import UuidDao from '@/daos/UuidDao';
 import * as utils from '@/utils';
 
 declare global {
@@ -104,6 +105,7 @@ sl.set('ThreadsDao', ThreadsDao);
 sl.set('TreeDao', TreeDao);
 sl.set('UserDao', UserDao);
 sl.set('UserGroupDao', UserGroupDao);
+sl.set('UuidDao', UuidDao);
 sl.set('utils', utils);
 
 // Only starts the server after Firebase has been initialized for authentication

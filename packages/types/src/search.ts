@@ -1,3 +1,6 @@
+import { Image } from './resource';
+import { Text } from './text';
+
 // FIXME
 
 export interface SearchTextsResultRow {
@@ -54,4 +57,12 @@ export type SearchType =
 export interface SearchFailureRequest {
   type: SearchType;
   query: string;
+}
+
+// FIXME UPDATED
+export type SearchPotentialPermissionsListsType = 'text' | 'img' | 'edit';
+
+export interface SearchPotentialPermissionsListsResponse {
+  results: Text[] | Image[];
+  count: number;
 }

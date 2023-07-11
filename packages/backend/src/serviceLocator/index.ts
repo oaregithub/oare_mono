@@ -42,6 +42,7 @@ import ThreadsDao from '@/daos/ThreadsDao';
 import TreeDao from '@/daos/TreeDao';
 import UserDao from '@/daos/UserDao';
 import UserGroupDao from '@/daos/UserGroupDao';
+import UuidDao from '@/daos/UuidDao';
 import * as utils from '@/utils';
 
 /**
@@ -97,6 +98,7 @@ export type ServiceTypes = {
   TreeDao: typeof TreeDao;
   UserDao: typeof UserDao;
   UserGroupDao: typeof UserGroupDao;
+  UuidDao: typeof UuidDao;
   utils: typeof utils;
 };
 

@@ -228,6 +228,9 @@ class ResourceDao {
 
     const PersonDao = sl.get('PersonDao');
     const TextDao = sl.get('TextDao');
+    const UuidDao = sl.get('UuidDao');
+    const UserDao = sl.get('UserDao');
+    const BibliographyDao = sl.get('BibliographyDao');
 
     const resourceRow = await this.getResourceRowByUuid(uuid, trx);
 
@@ -235,10 +238,38 @@ class ResourceDao {
 
     const text = await TextDao.getTextByUuid(textUuid, trx);
 
-    const source = resourceRow.sourceUuid
-      ? (await PersonDao.getPersonCoreByUuid(resourceRow.sourceUuid, trx))
-          ?.label || null
+    const sourceTableReference = resourceRow.sourceUuid
+      ? await UuidDao.getTableReferenceByUuid(resourceRow.sourceUuid, trx)
       : null;
+
+    const source = await (async () => {
+      if (!sourceTableReference || !resourceRow.sourceUuid) {
+        return null;
+      }
+      if (sourceTableReference === 'person') {
+        const person = await PersonDao.getPersonCoreByUuid(
+          resourceRow.sourceUuid,
+          trx
+        );
+
+        return person.label;
+      }
+      if (sourceTableReference === 'user') {
+        const user = await UserDao.getUserByUuid(resourceRow.sourceUuid, trx);
+
+        return `${user.firstName} ${user.lastName}`;
+      }
+      if (sourceTableReference === 'bibliography') {
+        const bibliography = await BibliographyDao.getBibliographyByUuid(
+          resourceRow.sourceUuid,
+          'chicago-author-date',
+          trx
+        );
+
+        return bibliography.title;
+      }
+      return null;
+    })();
 
     const url = await s3.getSignedUrlPromise('getObject', {
       Bucket: resourceRow.container,
@@ -406,16 +437,9 @@ class ResourceDao {
     userUuid: string | null,
     trx?: Knex.Transaction
   ): Promise<Image[]> {
-    const s3 = new AWS.S3();
-
     const CollectionTextUtils = sl.get('CollectionTextUtils');
-    const PersonDao = sl.get('PersonDao');
-    const TextDao = sl.get('TextDao');
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
 
     const imagesToHide = await CollectionTextUtils.imagesToHide(userUuid);
-
-    const text = await TextDao.getTextByUuid(textUuid, trx);
 
     const resourceUuids = await this.getLinkObjUuidsByReferenceUuid(
       textUuid,
@@ -428,48 +452,9 @@ class ResourceDao {
       uuid => !imagesToHide.includes(uuid)
     );
 
-    const resourceRows = await Promise.all(
-      allowedResourceUuids.map(uuid => this.getResourceRowByUuid(uuid, trx))
+    const images = await Promise.all(
+      allowedResourceUuids.map(uuid => this.getS3ImageByUuid(uuid, trx))
     );
-
-    const sources = (
-      await Promise.all(
-        resourceRows.map(row =>
-          row.sourceUuid
-            ? PersonDao.getPersonCoreByUuid(row.sourceUuid, trx)
-            : null
-        )
-      )
-    ).map(row => (row ? row.label : null));
-
-    const urls = await Promise.all(
-      resourceRows.map(row =>
-        s3.getSignedUrlPromise('getObject', {
-          Bucket: 'oare-image-bucket',
-          Key: row.link,
-        })
-      )
-    );
-
-    const imagesSides = await Promise.all(
-      resourceRows.map(row =>
-        this.getImageDetailsByUuid(row.uuid, 'sides', trx)
-      )
-    );
-    const imagesViews = await Promise.all(
-      resourceRows.map(row =>
-        this.getImageDetailsByUuid(row.uuid, 'views', trx)
-      )
-    );
-
-    const images: Image[] = resourceRows.map((row, idx) => ({
-      resourceRow: row,
-      source: sources[idx],
-      url: urls[idx],
-      sides: imagesSides[idx],
-      views: imagesViews[idx],
-      text,
-    }));
 
     return images;
   }
