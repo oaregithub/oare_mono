@@ -43,7 +43,7 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { v4 } from 'uuid';
 import { convertSideToSideNumber } from '@oare/oare';
-import { formattedSearchCharacter } from '@/daos/TextEpigraphyDao/utils';
+import { stringToCharsArray } from '@/daos/TextEpigraphyDao/utils';
 import { cleanLines } from './utils';
 
 // FIXME
@@ -1131,7 +1131,7 @@ class EditTextUtils {
             await Promise.all(
               sign.markup.markup.map(async markup => {
                 const formattedAltReading = markup.altReading
-                  ? formattedSearchCharacter(markup.altReading).join('')
+                  ? stringToCharsArray(markup.altReading).join('')
                   : undefined;
 
                 let altReadingUuid;

@@ -66,7 +66,7 @@ export default class TabletHtmlRenderer extends TabletRenderer {
 
   constructor(
     renderer: TabletRenderer,
-    { showNullDiscourse, highlightDiscourses }: TabletHtmlOptions = {}
+    { showNullDiscourse, highlightDiscourses }: Required<TabletHtmlOptions>
   ) {
     super(
       renderer.getEpigraphicUnits(),
@@ -74,8 +74,8 @@ export default class TabletHtmlRenderer extends TabletRenderer {
       renderer.getRendererType()
     );
     this.renderer = renderer;
-    this.showNullDiscourse = showNullDiscourse || false;
-    this.highlightDiscourses = highlightDiscourses || [];
+    this.showNullDiscourse = showNullDiscourse;
+    this.highlightDiscourses = highlightDiscourses;
   }
 
   markedUpEpigraphicReading(unit: EpigraphicUnit): string {

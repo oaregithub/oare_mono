@@ -73,15 +73,18 @@ const createTabletRenderer = (
   }: CreateTabletRendererOptions = {}
 ): TabletRenderer => {
   let renderer = new TabletRenderer(epigraphicUnits, locale, textFormat);
+
   if (textFormat === 'html') {
     renderer = new TabletHtmlRenderer(renderer, {
       showNullDiscourse,
       highlightDiscourses,
     });
   }
+
   if (lineNumbers) {
     renderer = new TabletLineNumRenderer(renderer);
   }
+
   return renderer;
 };
 

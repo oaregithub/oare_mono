@@ -1,7 +1,14 @@
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import express from 'express';
 import sl from '@/serviceLocator';
-import { SearchPotentialPermissionsListsType } from '@oare/types';
+import {
+  SearchPotentialPermissionsListsType,
+  SearchTransliterationMode,
+  SearchTransliterationResponse,
+  SearchType,
+} from '@oare/types';
+import { prepareCharactersForSearch } from '@/daos/SignReadingDao/utils';
+import { createTabletRenderer } from '@oare/oare';
 
 // FIXME
 
@@ -9,7 +16,90 @@ const router = express.Router();
 
 router.route('/search/transliteration').get(async (req, res, next) => {
   try {
-    // FIXME searches texts by text name and transliteration
+    const TextDao = sl.get('TextDao');
+    const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+    const utils = sl.get('utils');
+
+    const pagination = utils.extractPagination(req.query);
+    const transliteration = req.query.transliteration as string | undefined;
+    const mode =
+      (req.query.mode as SearchTransliterationMode) || 'respectAllBoundaries';
+
+    const transliterationUuids = await prepareCharactersForSearch(
+      transliteration
+    );
+
+    const textUuids = await TextEpigraphyDao.searchTransliteration(
+      transliterationUuids,
+      pagination,
+      req.user ? req.user.uuid : null,
+      mode
+    );
+
+    const texts = await Promise.all(
+      textUuids.map(uuid => TextDao.getTextByUuid(uuid))
+    );
+
+    const lines = await Promise.all(
+      textUuids.map(textUuid =>
+        TextEpigraphyDao.searchTransliterationLines(
+          textUuid,
+          transliterationUuids,
+          mode
+        )
+      )
+    );
+
+    const discourseUuids = await Promise.all(
+      textUuids.map(textUuid =>
+        TextEpigraphyDao.searchTransliterationDiscourseUuids(
+          textUuid,
+          transliterationUuids,
+          mode
+        )
+      )
+    );
+
+    const lineReadings = await Promise.all(
+      textUuids.map(async (uuid, idx) => {
+        const epigraphicUnits = await TextEpigraphyDao.getEpigraphicUnits(uuid);
+
+        const renderer = createTabletRenderer(epigraphicUnits, req.locale, {
+          textFormat: 'html',
+          lineNumbers: true,
+          highlightDiscourses: discourseUuids[idx],
+        });
+
+        return lines[idx].map(line => renderer.lineReading(line));
+      })
+    );
+
+    const count = await TextEpigraphyDao.searchTransliterationCount(
+      transliterationUuids,
+      req.user ? req.user.uuid : null,
+      mode
+    );
+
+    const response: SearchTransliterationResponse = {
+      results: texts.map((text, idx) => ({
+        text,
+        matches: lineReadings[idx],
+        discourseUuids: discourseUuids[idx],
+      })),
+      count,
+    };
+
+    if (response.results.length === 0) {
+      const SearchFailureDao = sl.get('SearchFailureDao');
+
+      const type: SearchType = 'transliteration';
+      const query = transliteration || '';
+      const userUuid = req.user ? req.user.uuid : null;
+
+      await SearchFailureDao.insertSearchFailure(type, query, userUuid);
+    }
+
+    res.json(response);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }
@@ -50,6 +140,14 @@ router.route('/search/dictionary').get(async (req, res, next) => {
 router.route('/search/words_in_text').get(async (req, res, next) => {
   try {
     // FIXME searches words in text - discourse/epigraphy duo
+  } catch (err) {
+    next(new HttpInternalError(err as string));
+  }
+});
+
+router.route('/search/texts').get(async (req, res, next) => {
+  try {
+    // FIXME searches texts by name
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

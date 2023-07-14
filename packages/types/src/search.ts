@@ -48,12 +48,6 @@ export interface SearchNullDiscourseResultRow extends SearchNullDiscourseLine {
   reading: string;
 }
 
-export type SearchType =
-  | 'title'
-  | 'transliteration'
-  | 'words'
-  | 'title+transliteration';
-
 export interface SearchFailureRequest {
   type: SearchType;
   query: string;
@@ -66,3 +60,25 @@ export interface SearchPotentialPermissionsListsResponse {
   results: Text[] | Image[];
   count: number;
 }
+
+export type SearchTransliterationMode =
+  | 'respectNoBoundaries'
+  | 'respectBoundaries'
+  | 'respectAllBoundaries';
+
+export interface SearchTransliterationItem {
+  text: Text;
+  matches: string[];
+  discourseUuids: string[];
+}
+
+export interface SearchTransliterationResponse {
+  results: SearchTransliterationItem[];
+  count: number;
+}
+
+export type SearchType =
+  | 'title'
+  | 'transliteration'
+  | 'words'
+  | 'title+transliteration';

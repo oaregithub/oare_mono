@@ -1,9 +1,20 @@
 import _ from 'lodash';
-import { EpigraphicUnit, TextEpigraphyRow } from '@oare/types';
+import {
+  EpigraphicUnit,
+  Pagination,
+  SearchCooccurrence,
+  SearchTransliterationMode,
+  TextEpigraphyRow,
+} from '@oare/types';
 import knex from '@/connection';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { convertSideNumberToSide } from '@oare/oare';
+import {
+  getNotOccurrenceTexts,
+  getSearchQuery,
+  getSequentialCharacterQuery,
+} from './utils';
 
 class TextEpigraphyDao {
   /**
@@ -73,12 +84,20 @@ class TextEpigraphyDao {
       )
     );
 
-    const discourse = epigraphyRow.discourseUuid
-      ? await TextDiscourseDao.getTextDiscourseRowByUuid(
+    const discourseExists = epigraphyRow.discourseUuid
+      ? await TextDiscourseDao.textDiscourseExists(
           epigraphyRow.discourseUuid,
           trx
         )
-      : null;
+      : false;
+
+    const discourse =
+      discourseExists && epigraphyRow.discourseUuid
+        ? await TextDiscourseDao.getTextDiscourseRowByUuid(
+            epigraphyRow.discourseUuid,
+            trx
+          )
+        : null;
 
     const spelling =
       discourse && discourse.spellingUuid
@@ -362,6 +381,186 @@ class TextEpigraphyDao {
     const count = await k('text_epigraphy')
       .count({ count: 'uuid' })
       .where({ reading_uuid: uuid })
+      .first();
+
+    return count && count.count ? Number(count.count) : 0;
+  }
+
+  /**
+   * Performs a transliteration search and returns texts that match the search.
+   * @param transliterationUuids Array of search cooccurrences.
+   * @param pagination Pagination object. Only limit and page are used.
+   * @param userUuid The UUID of the user performing the search. Used to filter out results in texts that the user does not have permission to view.
+   * @param mode The search transliteration mode.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of text UUIDs.
+   */
+  public async searchTransliteration(
+    transliterationUuids: SearchCooccurrence[],
+    pagination: Pagination,
+    userUuid: string | null,
+    mode: SearchTransliterationMode,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    const notUuids = await getNotOccurrenceTexts(
+      transliterationUuids,
+      mode,
+      trx
+    );
+
+    const matchingTexts: string[] = await getSearchQuery(
+      transliterationUuids,
+      textsToHide,
+      true,
+      mode,
+      trx
+    )
+      .distinct('text.uuid as uuid')
+      .whereNotIn('text.uuid', notUuids)
+      .orderBy('text.display_name')
+      .limit(pagination.limit)
+      .offset((pagination.page - 1) * pagination.limit)
+      .then(rows => rows.map(r => r.uuid));
+
+    return matchingTexts;
+  }
+
+  /**
+   * Performs a transliteration search and returns the lines that match the search in a given text.
+   * @param textUuid The UUID of the text to search in.
+   * @param transliterationUuids The search cooccurrences.
+   * @param mode The search transliteration mode.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of line numbers that match the search.
+   */
+  public async searchTransliterationLines(
+    textUuid: string,
+    transliterationUuids: SearchCooccurrence[],
+    mode: SearchTransliterationMode,
+    trx?: Knex.Transaction
+  ): Promise<number[]> {
+    const andCooccurrences = transliterationUuids.filter(
+      char => char.type === 'AND'
+    );
+
+    const lines: number[] = (
+      await Promise.all(
+        andCooccurrences.map(async (_char, index) => {
+          const query = getSequentialCharacterQuery(
+            andCooccurrences,
+            true,
+            mode,
+            undefined,
+            trx
+          );
+
+          const rows = await query
+            .distinct(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
+            .groupBy(index === 0 ? 'text_epigraphy.line' : `t${index}00.line`)
+            .where('text_epigraphy.text_uuid', textUuid);
+
+          return rows.map(r => r.line);
+        })
+      )
+    ).flat();
+
+    return [...new Set(lines.sort((a, b) => a - b))];
+  }
+
+  /**
+   * Performs a transliteration search and returns the discourse UUIDs that match the search in a given text.
+   * Used to highlight the matching results in the text.
+   * @param textUuid The UUID of the text to search in.
+   * @param transliterationUuids The search cooccurrences.
+   * @param mode The search transliteration mode.
+   * @param trx Knex Transaction. Optional.
+   * @returns Array of discourse UUIDs that match the search.
+   */
+  public async searchTransliterationDiscourseUuids(
+    textUuid: string,
+    transliterationUuids: SearchCooccurrence[],
+    mode: SearchTransliterationMode,
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const andOccurrences = transliterationUuids.filter(
+      char => char.type === 'AND'
+    );
+
+    const discourseUuids: string[] = (
+      await Promise.all(
+        andOccurrences.map(async _char => {
+          const columnNamesToSelect: string[] = [];
+          andOccurrences.forEach((occurrence, coocIdx) => {
+            occurrence.words.forEach((word, wordIdx) => {
+              word.uuids.forEach((_uuid, charIdx) => {
+                if (coocIdx === 0 && wordIdx === 0 && charIdx === 0) {
+                  columnNamesToSelect.push(
+                    `text_epigraphy.discourse_uuid as t${coocIdx}${wordIdx}${charIdx}`
+                  );
+                } else {
+                  columnNamesToSelect.push(
+                    `t${coocIdx}${wordIdx}${charIdx}.discourse_uuid as t${coocIdx}${wordIdx}${charIdx}`
+                  );
+                }
+              });
+            });
+          });
+
+          const query = getSequentialCharacterQuery(
+            andOccurrences,
+            true,
+            mode,
+            undefined,
+            trx
+          );
+
+          const rows: string[] = await query
+            .select(columnNamesToSelect)
+            .where('text_epigraphy.text_uuid', textUuid);
+
+          return rows.flatMap(r => Object.values(r));
+        })
+      )
+    ).flat();
+
+    return [...new Set(discourseUuids)];
+  }
+
+  /**
+   * Performs a transliteration search and returns the number texts that have a match.
+   * @param transliterationUuids The search cooccurrences.
+   * @param userUuid The UUID of the user performing the search. Used to filter out results in texts that the user does not have permission to view.
+   * @param mode The search transliteration mode.
+   * @param trx Knex Transaction. Optional.
+   * @returns Number of text matches.
+   */
+  public async searchTransliterationCount(
+    transliterationUuids: SearchCooccurrence[],
+    userUuid: string | null,
+    mode: SearchTransliterationMode,
+    trx?: Knex.Transaction
+  ): Promise<number> {
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
+    const notUuids = await getNotOccurrenceTexts(
+      transliterationUuids,
+      mode,
+      trx
+    );
+
+    const count = await getSearchQuery(
+      transliterationUuids,
+      textsToHide,
+      true,
+      mode,
+      trx
+    )
+      .countDistinct({ count: 'text.uuid' })
+      .whereNotIn('text.uuid', notUuids)
       .first();
 
     return count && count.count ? Number(count.count) : 0;

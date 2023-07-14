@@ -47,11 +47,6 @@ export default class TabletRenderer {
     this.rendererType = rendererType;
     this.sortMarkupUnits();
     this.addLineNumbersToRegions();
-
-    this.epigraphicUnits = this.epigraphicUnits.map(unit => ({
-      ...unit,
-      reading: this.markedUpEpigraphicReading(unit),
-    }));
   }
 
   private sortMarkupUnits() {
@@ -167,8 +162,13 @@ export default class TabletRenderer {
       return undeterminedReading(unitsOnLine[0]);
     }
 
+    const markedUpEpigraphicUnits = unitsOnLine.map(unit => ({
+      ...unit,
+      reading: this.markedUpEpigraphicReading(unit),
+    }));
+
     const lineReading = convertMarkedUpUnitsToLineReading(
-      unitsOnLine,
+      markedUpEpigraphicUnits,
       this.rendererType === 'regular'
     );
 
@@ -180,16 +180,21 @@ export default class TabletRenderer {
       unit => unit.type !== 'line'
     );
 
+    const markedUpEpigraphicUnits = unitsOnLine.map(unit => ({
+      ...unit,
+      reading: this.markedUpEpigraphicReading(unit),
+    }));
+
     const discourseUuids = Array.from(
       new Set(
-        unitsOnLine
+        markedUpEpigraphicUnits
           .map(unit => unit.discourseUuid)
           .filter((discourseUuid): discourseUuid is string => !!discourseUuid)
       )
     );
 
     const unitsByWord = discourseUuids.map(uuid =>
-      unitsOnLine.filter(unit => unit.discourseUuid === uuid)
+      markedUpEpigraphicUnits.filter(unit => unit.discourseUuid === uuid)
     );
 
     return unitsByWord;

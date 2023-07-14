@@ -38,7 +38,7 @@ export async function prepareCharactersForSearch(
     wordsArray.map(words =>
       Promise.all(
         words.map(word => {
-          const searchCharacter = word[0] === '!' ? word.substr(1) : word;
+          const searchCharacter = word[0] === '!' ? word.slice(1) : word;
           return prepareIndividualSearchCharacters(searchCharacter, trx);
         })
       )
@@ -108,11 +108,11 @@ const applyAmpersandWildcard = (signs: string[]): string[] => {
     wildcardSigns = wildcardSigns.flatMap(sign => {
       const accentedVowels = accentedVowelOptions.map(vowel => {
         const newSign = sign.replace(firstVowel, vowel);
-        return newSign.substr(1);
+        return newSign.slice(1);
       });
       const subscriptedVowels = subscriptOptions.map(vowel => {
         const newSign = `${sign}${vowel}`;
-        return newSign.substr(1);
+        return newSign.slice(1);
       });
       return [...accentedVowels, ...subscriptedVowels];
     });
