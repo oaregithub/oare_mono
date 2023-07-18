@@ -1,7 +1,8 @@
 import knex from '@/connection';
-import { Text, TextRow, LinkItem } from '@oare/types';
+import { Text, TextRow, LinkItem, Pagination } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
+import { ignorePunctuation } from '../TextEpigraphyDao/utils';
 
 class TextDao {
   /**
@@ -223,6 +224,47 @@ class TextDao {
       .orderByRaw('LOWER(text.display_name)');
 
     return rows;
+  }
+
+  /**
+   * Searches texts by name.
+   * @param pagination Pagination object.
+   * @param textsToHide Array of text uuids that the requesting user is not allowed to view.
+   * @param trx Knex Transaction. Optional.
+   * @returns Paginated array of text uuids that match the search.
+   */
+  public async searchTexts(
+    pagination: Pagination,
+    textsToHide: string[],
+    trx?: Knex.Transaction
+  ): Promise<string[]> {
+    const k = trx || knex;
+
+    const cleanSearch = ignorePunctuation(pagination.filter || '');
+
+    const uuids: string[] = await k('text')
+      .pluck('uuid')
+      .whereNotIn('uuid', textsToHide)
+      .orderBy('display_name')
+      .andWhere(function () {
+        this.whereRaw('LOWER(text.display_name) REGEXP ?', [cleanSearch])
+          .orWhereRaw(
+            "LOWER(CONCAT(IFNULL(text.excavation_prfx, ''), ' ', IFNULL(text.excavation_no, ''))) REGEXP ?",
+            [cleanSearch]
+          )
+          .orWhereRaw(
+            "LOWER(CONCAT(IFNULL(text.publication_prfx, ''), ' ', IFNULL(text.publication_no, ''))) REGEXP ?",
+            [cleanSearch]
+          )
+          .orWhereRaw(
+            "LOWER(CONCAT(IFNULL(text.museum_prfx, ''), ' ', IFNULL(text.museum_no, ''))) REGEXP ?",
+            [cleanSearch]
+          );
+      })
+      .limit(pagination.limit)
+      .offset((pagination.page - 1) * pagination.limit);
+
+    return uuids;
   }
 }
 

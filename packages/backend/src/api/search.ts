@@ -147,7 +147,23 @@ router.route('/search/words_in_text').get(async (req, res, next) => {
 
 router.route('/search/texts').get(async (req, res, next) => {
   try {
-    // FIXME searches texts by name
+    const utils = sl.get('utils');
+    const TextDao = sl.get('TextDao');
+    const CollectionTextUtils = sl.get('CollectionTextUtils');
+
+    const pagination = utils.extractPagination(req.query);
+
+    const textsToHide = await CollectionTextUtils.textsToHide(
+      req.user ? req.user.uuid : null
+    );
+
+    const textUuids = await TextDao.searchTexts(pagination, textsToHide);
+
+    const texts = await Promise.all(
+      textUuids.map(uuid => TextDao.getTextByUuid(uuid))
+    );
+
+    res.json(texts);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

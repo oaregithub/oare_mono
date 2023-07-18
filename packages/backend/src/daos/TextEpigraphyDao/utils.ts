@@ -136,10 +136,10 @@ export function getSequentialCharacterQuery(
           charIndex === 0 &&
           mode === 'respectAllBoundaries'
         ) {
-          query = query.join(`text_epigraphy AS before0`, function () {
-            this.on(`before0.text_uuid`, 'text_epigraphy.text_uuid').andOn(
+          query = query.join('text_epigraphy AS before0', function () {
+            this.on('before0.text_uuid', 'text_epigraphy.text_uuid').andOn(
               k.raw(
-                `(text_epigraphy.char_on_tablet = 1 or (before0.char_on_tablet=text_epigraphy.char_on_tablet - 1 and before0.discourse_uuid<>text_epigraphy.discourse_uuid))`
+                '(text_epigraphy.char_on_tablet = 1 or (before0.char_on_tablet=text_epigraphy.char_on_tablet - 1 and before0.discourse_uuid<>text_epigraphy.discourse_uuid))'
               )
             );
           });
