@@ -2,7 +2,6 @@ import knex from '@/connection';
 import { Text, TextRow, LinkItem, Pagination } from '@oare/types';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
-import { ignorePunctuation } from '../TextEpigraphyDao/utils';
 
 class TextDao {
   /**
@@ -240,7 +239,9 @@ class TextDao {
   ): Promise<string[]> {
     const k = trx || knex;
 
-    const cleanSearch = ignorePunctuation(pagination.filter || '');
+    const utils = sl.get('utils');
+
+    const cleanSearch = utils.ignorePunctuation(pagination.filter || '');
 
     const uuids: string[] = await k('text')
       .pluck('uuid')

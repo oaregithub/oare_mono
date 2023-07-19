@@ -7,7 +7,6 @@ import {
   SearchTransliterationResponse,
   SearchType,
 } from '@oare/types';
-import { prepareCharactersForSearch } from '@/daos/SignReadingDao/utils';
 import { createTabletRenderer } from '@oare/oare';
 
 // FIXME
@@ -25,7 +24,7 @@ router.route('/search/transliteration').get(async (req, res, next) => {
     const mode =
       (req.query.mode as SearchTransliterationMode) || 'respectAllBoundaries';
 
-    const transliterationUuids = await prepareCharactersForSearch(
+    const transliterationUuids = await utils.prepareCharactersForSearch(
       transliteration
     );
 

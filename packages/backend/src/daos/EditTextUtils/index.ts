@@ -43,7 +43,6 @@ import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { v4 } from 'uuid';
 import { convertSideToSideNumber } from '@oare/oare';
-import { stringToCharsArray } from '@/daos/TextEpigraphyDao/utils';
 import { cleanLines } from './utils';
 
 // FIXME
@@ -952,6 +951,7 @@ class EditTextUtils {
     const TextMarkupDao = sl.get('TextMarkupDao');
     const TextDiscourseDao = sl.get('TextDiscourseDao');
     const SignReadingDao = sl.get('SignReadingDao');
+    const utils = sl.get('utils');
 
     const sideNumber = convertSideToSideNumber(payload.side);
 
@@ -1131,7 +1131,7 @@ class EditTextUtils {
             await Promise.all(
               sign.markup.markup.map(async markup => {
                 const formattedAltReading = markup.altReading
-                  ? stringToCharsArray(markup.altReading).join('')
+                  ? utils.stringToCharsArray(markup.altReading).join('')
                   : undefined;
 
                 let altReadingUuid;

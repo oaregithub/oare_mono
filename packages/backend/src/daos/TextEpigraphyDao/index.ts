@@ -10,11 +10,6 @@ import knex from '@/connection';
 import { Knex } from 'knex';
 import sl from '@/serviceLocator';
 import { convertSideNumberToSide } from '@oare/oare';
-import {
-  getNotOccurrenceTexts,
-  getSearchQuery,
-  getSequentialCharacterQuery,
-} from './utils';
 
 class TextEpigraphyDao {
   /**
@@ -403,21 +398,17 @@ class TextEpigraphyDao {
     trx?: Knex.Transaction
   ): Promise<string[]> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const utils = sl.get('utils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
-    const notUuids = await getNotOccurrenceTexts(
+    const notUuids = await utils.getNotOccurrenceTexts(
       transliterationUuids,
       mode,
       trx
     );
 
-    const matchingTexts: string[] = await getSearchQuery(
-      transliterationUuids,
-      textsToHide,
-      true,
-      mode,
-      trx
-    )
+    const matchingTexts: string[] = await utils
+      .getSearchQuery(transliterationUuids, textsToHide, true, mode, trx)
       .distinct('text.uuid as uuid')
       .whereNotIn('text.uuid', notUuids)
       .orderBy('text.display_name')
@@ -442,6 +433,8 @@ class TextEpigraphyDao {
     mode: SearchTransliterationMode,
     trx?: Knex.Transaction
   ): Promise<number[]> {
+    const utils = sl.get('utils');
+
     const andCooccurrences = transliterationUuids.filter(
       char => char.type === 'AND'
     );
@@ -449,7 +442,7 @@ class TextEpigraphyDao {
     const lines: number[] = (
       await Promise.all(
         andCooccurrences.map(async (_char, index) => {
-          const query = getSequentialCharacterQuery(
+          const query = utils.getSequentialCharacterQuery(
             andCooccurrences,
             true,
             mode,
@@ -485,6 +478,8 @@ class TextEpigraphyDao {
     mode: SearchTransliterationMode,
     trx?: Knex.Transaction
   ): Promise<string[]> {
+    const utils = sl.get('utils');
+
     const andOccurrences = transliterationUuids.filter(
       char => char.type === 'AND'
     );
@@ -509,7 +504,7 @@ class TextEpigraphyDao {
             });
           });
 
-          const query = getSequentialCharacterQuery(
+          const query = utils.getSequentialCharacterQuery(
             andOccurrences,
             true,
             mode,
@@ -544,21 +539,17 @@ class TextEpigraphyDao {
     trx?: Knex.Transaction
   ): Promise<number> {
     const CollectionTextUtils = sl.get('CollectionTextUtils');
+    const utils = sl.get('utils');
 
     const textsToHide = await CollectionTextUtils.textsToHide(userUuid, trx);
-    const notUuids = await getNotOccurrenceTexts(
+    const notUuids = await utils.getNotOccurrenceTexts(
       transliterationUuids,
       mode,
       trx
     );
 
-    const count = await getSearchQuery(
-      transliterationUuids,
-      textsToHide,
-      true,
-      mode,
-      trx
-    )
+    const count = await utils
+      .getSearchQuery(transliterationUuids, textsToHide, true, mode, trx)
       .countDistinct({ count: 'text.uuid' })
       .whereNotIn('text.uuid', notUuids)
       .first();

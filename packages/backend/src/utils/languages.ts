@@ -1,4 +1,59 @@
-export const languages = [
+import DetectLanguage, { DetectionResult } from 'detectlanguage';
+import AWS from 'aws-sdk';
+import _ from 'lodash';
+
+/**
+ * Determines the language of a given string.
+ * @param text The text string to analyze.
+ * @returns The language of the text.
+ */
+export const detectLanguage = async (text: string): Promise<string> => {
+  const apiKey: string = await getDetectLanguageAPIKEY();
+  const detectLanguageAPI = new DetectLanguage(apiKey);
+
+  const language:
+    | { code: string; name: string }
+    | undefined = await detectLanguageAPI
+    .detect(text)
+    .then((results: DetectionResult[]) =>
+      languages.find(lang => lang.code === results[0].language)
+    );
+  return language && language.name ? _.capitalize(language.name) : 'unknown';
+};
+
+/**
+ * Retrieves the DetectLanguage API key from the environment variables or from the S3 bucket.
+ * @returns The DetectLanguage API key.
+ */
+export const getDetectLanguageAPIKEY = async (): Promise<string> => {
+  const s3 = new AWS.S3();
+
+  let apiKey = '';
+
+  if (process.env.DETECT_LANGUAGE_API_KEY) {
+    apiKey = process.env.DETECT_LANGUAGE_API_KEY;
+  } else {
+    const response = (
+      await s3
+        .getObject({
+          Bucket: 'oare-resources',
+          Key: 'detectlanguage_auth.json',
+        })
+        .promise()
+    ).Body;
+    if (response) {
+      apiKey = JSON.parse(response as string).authKey;
+      process.env.DETECT_LANGUAGE_API_KEY = apiKey;
+    }
+  }
+
+  return apiKey;
+};
+
+/**
+ * List of languages supported by the DetectLanguage API.
+ */
+const languages = [
   {
     code: 'aa',
     name: 'Afar',
