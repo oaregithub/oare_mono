@@ -4,6 +4,10 @@ import messages from '../messages';
 
 Vue.use(VueI18n);
 
+/**
+ * Retrieves the user's preferred locale from local storage or navigator.
+ * @returns The user's preferred locale.
+ */
 const getLocale = (): string => {
   const storedLocale = localStorage.getItem('locale');
   if (storedLocale) {
@@ -15,6 +19,9 @@ const getLocale = (): string => {
   return 'en';
 };
 
+/**
+ * The VueI18n instance used throughout the application.
+ */
 export default new VueI18n({
   locale: getLocale(),
   messages,

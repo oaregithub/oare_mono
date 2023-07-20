@@ -1,9 +1,11 @@
 import axios from '@/axiosInstance';
 import { UpdateProfilePayload } from '@oare/types';
 import firebase from '@/firebase';
-import store from '@/ts-store';
+import sl from '@/serviceLocator';
 
 const updateProfile = async (payload: UpdateProfilePayload): Promise<void> => {
+  const store = sl.get('store');
+
   await axios.patch('/profile', payload);
 
   const { currentUser } = firebase.auth();

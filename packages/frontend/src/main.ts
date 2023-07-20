@@ -4,7 +4,7 @@ import Vuetify from 'vuetify';
 import server from '@/serverProxy';
 import globalActions from '@/globalActions';
 import sl from '@/serviceLocator';
-import store from '@/ts-store';
+import store from '@/store';
 import _ from 'lodash';
 import { resetAdminBadge } from '@/utils';
 import VueGtag from 'vue-gtag';
@@ -18,15 +18,20 @@ import i18n from './i18n';
 import firebase from './firebase';
 import 'vue-inner-image-zoom/lib/vue-inner-image-zoom.css';
 
+// Initializes each service at startup.
 sl.set('serverProxy', server);
 sl.set('globalActions', globalActions);
 sl.set('store', store);
 sl.set('lodash', _);
 sl.set('router', router);
 
+// Loads base components.
 loadBases();
 
+// Initializes Vuetify.
 Vue.use(Vuetify);
+
+// Initializes Google Analytics if in production.
 if (process.env.NODE_ENV === 'production') {
   Vue.use(
     VueGtag,
@@ -37,10 +42,14 @@ if (process.env.NODE_ENV === 'production') {
     router
   );
 }
+
 Vue.config.productionTip = false;
 
 let app: Vue;
 
+/**
+ * Sets up the admin badge to be reset every 5 minutes. Uses polling to check if new threads or errors exist.
+ */
 const setupAdminBadge = async () => {
   await resetAdminBadge();
 
@@ -49,6 +58,7 @@ const setupAdminBadge = async () => {
   }, 1000 * 60 * 5);
 };
 
+// Sets user and permissions on login, logout, and token change. Initializes the app if it hasn't been initialized yet.
 firebase.auth().onIdTokenChanged(async user => {
   const { currentUser } = firebase.auth();
   if (currentUser && user && user.email && user.displayName) {
@@ -66,10 +76,10 @@ firebase.auth().onIdTokenChanged(async user => {
         await setupAdminBadge();
       }
     } catch (err) {
-      await server.logError(
-        'Error initializing site',
-        (err as Error).stack || null
-      );
+      await server.logError({
+        description: 'Error initializing site',
+        stacktrace: (err as Error).stack || null,
+      });
     }
   }
   if (!app) {

@@ -6,11 +6,11 @@
       clipped
       v-model="drawer"
       :mobile-breakpoint="$vuetify.breakpoint.thresholds.sm"
-      color="#002E5D"
+      color="primary"
     >
       <component :is="sidebarComponent" />
     </v-navigation-drawer>
-    <OareAppBar @nav-icon-click="drawer = !drawer" :router="router" />
+    <OareAppBar @nav-icon-click="drawer = !drawer" />
 
     <v-main>
       <v-container fluid>
@@ -25,7 +25,6 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from '@vue/composition-api';
 import OareSidebar from './components/base/OareSidebar/index.vue';
-import defaultRouter from './router';
 
 export default defineComponent({
   name: 'App',
@@ -33,11 +32,17 @@ export default defineComponent({
     OareSidebar,
   },
   setup(_, context) {
+    /**
+     * Boolean to control the sidebar drawer
+     */
     const drawer = ref(true);
-    const hasLanded = ref(false);
 
+    /**
+     * Computed property to determine which sidebar component to use based on the current route
+     */
     const sidebarComponent = computed(() => {
       const routeName = context.root.$route.name;
+
       if (routeName && routeName.includes('dashboard')) {
         return 'OareDashboardSidebar';
       } else if (
@@ -48,16 +53,13 @@ export default defineComponent({
       ) {
         return 'OareAdminSidebar';
       }
+
       return 'OareSidebar';
     });
 
-    const router = computed(() => defaultRouter);
-
     return {
       drawer,
-      hasLanded,
       sidebarComponent,
-      router,
     };
   },
 });

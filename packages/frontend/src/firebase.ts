@@ -1,6 +1,9 @@
 import firebase from 'firebase/app';
 import 'firebase/auth';
 
+/**
+ * The configuration for the Firebase app.
+ */
 const firebaseConfig = {
   apiKey: 'AIzaSyDpIFs9456JIobouGi7sDz0MROnHR8Oja0',
   authDomain: 'oareauth.firebaseapp.com',
@@ -11,6 +14,7 @@ const firebaseConfig = {
   measurementId: 'G-59Z6RJEKYC',
 };
 
+// Initilize the Firebase app.
 firebase.initializeApp(firebaseConfig);
 
 export default firebase;

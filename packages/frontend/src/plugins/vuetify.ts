@@ -3,6 +3,9 @@ import Vuetify from 'vuetify/lib';
 
 Vue.use(Vuetify);
 
+/**
+ * Initializes the Vuetify plugin instance.
+ */
 export default new Vuetify({
   theme: {
     themes: {
