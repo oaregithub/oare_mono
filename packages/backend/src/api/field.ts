@@ -14,7 +14,7 @@ router
       const FieldDao = sl.get('FieldDao');
 
       const { uuid: referenceUuid } = req.params;
-      const type = (req.params.type as FieldType) || 'description';
+      const type = (req.params.type || 'description') as FieldType;
 
       const response = await FieldDao.getFieldRowsByReferenceUuidAndType(
         referenceUuid,

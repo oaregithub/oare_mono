@@ -3,7 +3,7 @@ import {
   CreateGroupPayload,
   UpdateGroupDescriptionPayload,
 } from '@oare/types';
-import axios from '../axiosInstance';
+import axios from '@/axiosInstance';
 
 async function getGroup(id: number): Promise<Group> {
   const { data } = await axios.get(`/groups/${id}`);
@@ -16,11 +16,8 @@ async function deleteGroup(id: number): Promise<void> {
 
 async function updateGroupDescription(
   id: number,
-  description: string
+  payload: UpdateGroupDescriptionPayload
 ): Promise<void> {
-  const payload: UpdateGroupDescriptionPayload = {
-    description,
-  };
   await axios.patch(`/groups/${id}`, payload);
 }
 
@@ -29,11 +26,7 @@ async function getAllGroups(): Promise<Group[]> {
   return data;
 }
 
-async function createGroup(name: string, description: string): Promise<number> {
-  const payload: CreateGroupPayload = {
-    name,
-    description,
-  };
+async function createGroup(payload: CreateGroupPayload): Promise<number> {
   const { data } = await axios.post('/groups', payload);
   return data;
 }

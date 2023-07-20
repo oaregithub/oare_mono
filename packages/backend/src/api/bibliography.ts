@@ -55,11 +55,8 @@ router
 
         const { uuid } = req.params;
 
-        const citationStyle = req.query.citationStyle as string | undefined;
-        if (!citationStyle) {
-          next(new HttpBadRequest('Citation style not specified'));
-          return;
-        }
+        const citationStyle = (req.query.citationStyle ||
+          'chicago-author-date') as string;
 
         const bibliographyExists = await BibliographyDao.bibliographyExists(
           uuid

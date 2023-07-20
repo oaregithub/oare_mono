@@ -1,38 +1,20 @@
 import axios from '@/axiosInstance';
-import { FieldPayload, FieldRow } from '@oare/types';
+import { FieldPayload, FieldRow, FieldType } from '@oare/types';
 
-async function getFieldDescriptions(
-  referenceUuid: string
-): Promise<FieldRow[]> {
-  const { data } = await axios.get(`/field/${referenceUuid}`);
+async function getField(uuid: string, type?: FieldType): Promise<FieldRow[]> {
+  const { data } = await axios.get(`/field/${uuid}`, {
+    params: {
+      type,
+    },
+  });
   return data;
 }
 
-async function addFieldDescription(
-  uuid: string,
-  description: string,
-  primacy: number,
-  isTaxonomy: boolean
-): Promise<void> {
-  const payload: FieldPayload = {
-    description,
-    primacy,
-    isTaxonomy,
-  };
+async function addField(uuid: string, payload: FieldPayload): Promise<void> {
   await axios.post(`/field/${uuid}`, payload);
 }
 
-async function updateFieldDescription(
-  uuid: string,
-  description: string,
-  primacy: number,
-  isTaxonomy: boolean
-): Promise<void> {
-  const payload: FieldPayload = {
-    description,
-    primacy,
-    isTaxonomy,
-  };
+async function updateField(uuid: string, payload: FieldPayload): Promise<void> {
   await axios.patch(`/field/${uuid}`, payload);
 }
 
@@ -41,8 +23,8 @@ async function deleteField(uuid: string): Promise<void> {
 }
 
 export default {
-  getFieldDescriptions,
-  addFieldDescription,
-  updateFieldDescription,
+  getField,
+  addField,
+  updateField,
   deleteField,
 };

@@ -1,6 +1,6 @@
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import permissionsRoute from '@/middlewares/router/permissionsRoute';
-import { ItemPropertyRow, LinkRow, ResourceRow } from '@oare/types';
+import { UploadImageDataPayload } from '@oare/types';
 import AWS from 'aws-sdk';
 import express from 'express';
 import fileUpload from 'express-fileupload';
@@ -20,11 +20,7 @@ router
         resources,
         links,
         itemProperties,
-      }: {
-        resources: ResourceRow[];
-        links: LinkRow[];
-        itemProperties: ItemPropertyRow[];
-      } = req.body;
+      }: UploadImageDataPayload = req.body;
 
       await utils.createTransaction(async trx => {
         await Promise.all(

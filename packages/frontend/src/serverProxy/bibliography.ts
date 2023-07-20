@@ -12,8 +12,15 @@ async function getAllBibliographies(
   return data;
 }
 
-async function getBibliography(uuid: string): Promise<Bibliography> {
-  const { data } = await axios.get(`/bibliography/${uuid}`);
+async function getBibliography(
+  uuid: string,
+  citationStyle?: string
+): Promise<Bibliography> {
+  const { data } = await axios.get(`/bibliography/${uuid}`, {
+    params: {
+      citationStyle,
+    },
+  });
   return data;
 }
 

@@ -1,90 +1,89 @@
 import axios from '@/axiosInstance';
 import {
-  SearchTextsResponse,
-  SearchTextsCountPayload,
-  SearchTextsPayload,
-  SearchSpellingResultRow,
-  SearchDiscourseSpellingResponse,
   Pagination,
-  SearchNullDiscourseResultRow,
+  SearchPotentialPermissionsListsResponse,
+  SearchPotentialPermissionsListsType,
+  SearchTransliterationMode,
+  SearchTransliterationResponse,
+  Text,
 } from '@oare/types';
 
-async function searchTexts(
-  payload: SearchTextsPayload
-): Promise<SearchTextsResponse> {
-  const { data } = await axios.get('/search', { params: payload });
-  return data;
-}
-
-async function searchTextsTotal(
-  payload: SearchTextsCountPayload
-): Promise<number> {
-  const { data } = await axios.get('/search/count', { params: payload });
-  return data;
-}
-
-async function searchSpellings(
-  spelling: string
-): Promise<SearchSpellingResultRow[]> {
-  const { data } = await axios.get('/search/spellings', {
+async function searchTransliteration(
+  transliteration: string,
+  mode: SearchTransliterationMode,
+  pagination: Pagination
+): Promise<SearchTransliterationResponse> {
+  const { data } = await axios.get('/search/transliteration', {
     params: {
-      spelling,
-    },
-  });
-
-  return data;
-}
-
-async function searchSpellingDiscourse(
-  spelling: string,
-  { page, limit }: Pagination
-): Promise<SearchDiscourseSpellingResponse> {
-  const { data } = await axios.get('/search/spellings/discourse', {
-    params: {
-      spelling,
-      page,
-      limit,
-    },
-  });
-
-  return data;
-}
-
-async function searchNullDiscourse(
-  characters: string,
-  page: number,
-  limit: number,
-  includeSuperfluous: boolean
-): Promise<SearchNullDiscourseResultRow[]> {
-  const { data } = await axios.get('/search/discourse/null', {
-    params: {
-      characters,
-      page,
-      limit,
-      includeSuperfluous,
+      transliteration,
+      mode,
+      ...pagination,
     },
   });
   return data;
 }
 
-async function searchNullDiscourseCount(
-  characters: string,
-  includeSuperfluous: boolean
-): Promise<number> {
-  const { data } = await axios.get('/search/discourse/null/count', {
+// FIXME
+async function searchSpellings(): Promise<void> {
+  const { data } = await axios.get('/search/spellings');
+  return data;
+}
+
+// FIXME
+async function searchDiscourseSpellings(): Promise<void> {
+  const { data } = await axios.get('/search/discourse_spellings');
+  return data;
+}
+
+// FIXME
+async function searchNullDiscourseSpellings(): Promise<void> {
+  const { data } = await axios.get('/search/null_discourse_spellings');
+  return data;
+}
+
+// FIXME
+async function searchDictionary(): Promise<void> {
+  const { data } = await axios.get('/search/dictionary');
+  return data;
+}
+
+// FIXME
+async function searchWordsInText(): Promise<void> {
+  const { data } = await axios.get('/search/words_in_text');
+  return data;
+}
+
+async function searchTexts(pagination: Pagination): Promise<Text> {
+  const { data } = await axios.get('/search/texts', {
     params: {
-      characters,
-      includeSuperfluous,
+      ...pagination,
+    },
+  });
+  return data;
+}
+
+async function searchPotentialPermissionsLists(
+  groupId: number | null,
+  type: SearchPotentialPermissionsListsType,
+  pagination: Pagination
+): Promise<SearchPotentialPermissionsListsResponse> {
+  const { data } = await axios.get('/search/potential_permissions_lists', {
+    params: {
+      groupId,
+      type,
+      ...pagination,
     },
   });
   return data;
 }
 
 export default {
+  searchTransliteration,
   searchSpellings,
-  searchSpellingDiscourse,
+  searchDiscourseSpellings,
+  searchNullDiscourseSpellings,
+  searchDictionary,
+  searchWordsInText,
   searchTexts,
-  searchTextsTotal,
-  searchNullDiscourse,
-  searchNullDiscourseCount,
+  searchPotentialPermissionsLists,
 };

@@ -53,7 +53,7 @@ router
         const SpatialUnitDao = sl.get('SpatialUnitDao');
         const cache = sl.get('cache');
 
-        const uuid = req.params.uuid as string;
+        const { uuid } = req.params;
 
         const sealExists = await SpatialUnitDao.spatialUnitExists(uuid);
         if (!sealExists) {

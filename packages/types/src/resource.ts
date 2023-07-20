@@ -1,5 +1,6 @@
 // COMPLETE
 
+import { ItemPropertyRow } from './properties';
 import { Text } from './text';
 
 export interface ResourceRow {
@@ -24,4 +25,10 @@ export interface Image {
   text: Text;
   sides: string[];
   views: string[];
+}
+
+export interface UploadImageDataPayload {
+  resources: ResourceRow[];
+  links: LinkRow[];
+  itemProperties: ItemPropertyRow[];
 }

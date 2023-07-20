@@ -181,7 +181,6 @@ router.route('/properties_links').get(async (req, res, next) => {
         textUuidFilter
       );
 
-      // FIXME this is probably duplicated and could be extracted
       const discourseReading = (discourse: TextDiscourseUnit) => {
         let reading: string = '';
         if (

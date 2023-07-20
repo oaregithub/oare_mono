@@ -115,9 +115,8 @@ describe('GET /epigraphies/:uuid', () => {
   });
 });
 
-describe('PATCH /epigraphies/:uuid', () => {
-  const uuid = 'test-uuid';
-  const PATH = `${API_PATH}/epigraphies/${uuid}`;
+describe('PATCH /epigraphies', () => {
+  const PATH = `${API_PATH}/epigraphies`;
 
   const mockCollectionTextUtils = {
     canEditText: jest.fn().mockResolvedValue(true),

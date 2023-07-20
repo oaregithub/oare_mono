@@ -1,21 +1,21 @@
+import axios from '@/axiosInstance';
 import {
-  LogErrorPayload,
-  ErrorsResponse,
   ErrorStatus,
-  UpdateErrorStatusPayload,
+  ErrorsResponse,
   ErrorsSortType,
+  LogErrorPayload,
+  Pagination,
+  UpdateErrorStatusPayload,
 } from '@oare/types';
-import axios from '../axiosInstance';
 
 async function getErrorLog(
-  status: ErrorStatus | '',
+  status: ErrorStatus,
   user: string,
   description: string,
   stacktrace: string,
   sort: ErrorsSortType,
   desc: boolean,
-  page: number,
-  limit: number
+  pagination: Pagination
 ): Promise<ErrorsResponse> {
   const { data } = await axios.get('/errors', {
     params: {
@@ -25,43 +25,30 @@ async function getErrorLog(
       stacktrace,
       sort,
       desc,
-      page,
-      limit,
+      ...pagination,
     },
   });
   return data;
 }
 
-async function logError(
-  description: string,
-  stacktrace: string | null
-): Promise<void> {
-  const payload: LogErrorPayload = {
-    description,
-    stacktrace,
-  };
+async function logError(payload: LogErrorPayload): Promise<void> {
   await axios.post('/errors', payload);
 }
 
 async function updateErrorStatus(
-  uuids: string[],
-  status: ErrorStatus
+  payload: UpdateErrorStatusPayload
 ): Promise<void> {
-  const payload: UpdateErrorStatusPayload = {
-    uuids,
-    status,
-  };
   await axios.patch('/errors', payload);
 }
 
 async function newErrorsExist(): Promise<boolean> {
-  const { data } = await axios.get('/newerrors');
+  const { data } = await axios.get('/new_errors');
   return data;
 }
 
 export default {
-  logError,
   getErrorLog,
+  logError,
   updateErrorStatus,
   newErrorsExist,
 };

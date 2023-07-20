@@ -1,62 +1,63 @@
 import {
   Pagination,
-  PersonInfo,
-  PersonListItem,
+  Person,
+  PersonCore,
   TextOccurrencesCountResponseItem,
   TextOccurrencesResponseRow,
 } from '@oare/types';
-import axios from '../axiosInstance';
+import axios from '@/axiosInstance';
 
-async function getPersons(letter: string): Promise<PersonListItem[]> {
-  const { data } = await axios.get(`/persons/${encodeURIComponent(letter)}`);
+async function getPersonsByLetter(letter: string): Promise<PersonCore[]> {
+  const { data } = await axios.get(`/persons/${letter}`);
   return data;
 }
 
-async function getPersonsOccurrencesCounts(
-  personUuids: string[],
-  pagination?: Partial<Pagination>,
+async function getPersonOccurrencesCount(
+  personsUuids: string[],
+  filter: string,
   roleUuid?: string
 ): Promise<TextOccurrencesCountResponseItem[]> {
-  const { data } = await axios.post('/persons/occurrences/count', personUuids, {
+  const { data } = await axios.get('/persons/occurrences/count', {
     params: {
-      ...pagination,
+      personsUuids,
+      filter,
       roleUuid,
     },
   });
   return data;
 }
 
-async function getPersonsOccurrencesTexts(
+async function getPersonOccurrences(
   personsUuids: string[],
   pagination: Pagination,
   roleUuid?: string
 ): Promise<TextOccurrencesResponseRow[]> {
   const { data } = await axios.get('/persons/occurrences/texts', {
     params: {
-      ...pagination,
       personsUuids,
+      ...pagination,
       roleUuid,
     },
   });
   return data;
 }
 
-async function disconnectPersons(
-  discourseUuid: string,
-  personUuid: string
+async function disconnectPersonOccurrence(
+  personUuid: string,
+  discourseUuid: string
 ): Promise<void> {
   await axios.delete(`/persons/disconnect/${personUuid}/${discourseUuid}`);
 }
 
-async function getPersonInfo(uuid: string): Promise<PersonInfo> {
+async function getPerson(uuid: string): Promise<Person> {
   const { data } = await axios.get(`/person/${uuid}`);
   return data;
 }
 
 export default {
-  getPersons,
-  getPersonsOccurrencesCounts,
-  getPersonsOccurrencesTexts,
-  disconnectPersons,
-  getPersonInfo,
+  getPersonsByLetter,
+  getPersonOccurrencesCount,
+  getPersonOccurrences,
+  disconnectPersonOccurrence,
+  getPerson,
 };

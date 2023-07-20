@@ -1,7 +1,7 @@
-import { PublicationResponse } from '@oare/types';
-import axios from '../axiosInstance';
+import { Publication } from '@oare/types';
+import axios from '@/axiosInstance';
 
-async function getAllPublications(): Promise<PublicationResponse[]> {
+async function getAllPublications(): Promise<Publication[]> {
   const { data } = await axios.get('/publications');
   return data;
 }

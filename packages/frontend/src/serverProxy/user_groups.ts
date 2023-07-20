@@ -3,7 +3,7 @@ import {
   RemoveUsersFromGroupPayload,
   User,
 } from '@oare/types';
-import axios from '../axiosInstance';
+import axios from '@/axiosInstance';
 
 async function getGroupUsers(groupId: number): Promise<User[]> {
   const { data } = await axios.get(`/user_groups/${groupId}`);
@@ -12,17 +12,15 @@ async function getGroupUsers(groupId: number): Promise<User[]> {
 
 async function addUsersToGroup(
   groupId: number,
-  userUuids: string[]
+  payload: AddUsersToGroupPayload
 ): Promise<void> {
-  const payload: AddUsersToGroupPayload = { userUuids };
   await axios.post(`/user_groups/${groupId}`, payload);
 }
 
 async function removeUsersFromGroup(
   groupId: number,
-  userUuids: string[]
+  payload: RemoveUsersFromGroupPayload
 ): Promise<void> {
-  const payload: RemoveUsersFromGroupPayload = { userUuids };
   await axios.delete(`/user_groups/${groupId}`, {
     params: payload,
   });

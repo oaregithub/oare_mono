@@ -90,7 +90,125 @@ router
         next(new HttpInternalError(err as string));
       }
     }
-  )
+  );
+
+router
+  .route('/epigraphies')
+  .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
+    try {
+      const TextDao = sl.get('TextDao');
+      const HierarchyDao = sl.get('HierarchyDao');
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+      const ResourceDao = sl.get('ResourceDao');
+      const TextDiscourseDao = sl.get('TextDiscourseDao');
+      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
+      const TextMarkupDao = sl.get('TextMarkupDao');
+      const PublicDenylistDao = sl.get('PublicDenylistDao');
+      const TreeDao = sl.get('TreeDao');
+      const utils = sl.get('utils');
+      const cache = sl.get('cache');
+
+      const { tables }: CreateTextsPayload = req.body;
+
+      const addingToExistingText = await TextDao.textExists(tables.text.uuid);
+
+      await utils.createTransaction(async trx => {
+        // Text
+        if (!addingToExistingText) {
+          await TextDao.insertTextRow(tables.text, trx);
+        } else {
+          await TextDao.updateTextInfo(
+            tables.text.uuid,
+            tables.text.excavationPrefix,
+            tables.text.excavationNumber,
+            tables.text.museumPrefix,
+            tables.text.museumNumber,
+            tables.text.publicationPrefix,
+            tables.text.publicationNumber,
+            trx
+          );
+        }
+
+        // Hierarchy
+        if (!addingToExistingText) {
+          await HierarchyDao.insertHierarchyRow(tables.hierarchy, trx);
+        }
+
+        // Resource
+        await Promise.all(
+          tables.resources.map(row => ResourceDao.insertResourceRow(row, trx))
+        );
+
+        // Link
+        await Promise.all(
+          tables.links.map(row => ResourceDao.insertLinkRow(row, trx))
+        );
+
+        // Tree
+        await Promise.all(
+          tables.trees.map(row => TreeDao.insertTreeRow(row, trx))
+        );
+
+        // Discourse
+        const discourseRowParents = [
+          ...new Set(tables.discourses.map(row => row.parentUuid)),
+        ];
+        const discourseRowsByParent: TextDiscourseRow[][] = discourseRowParents.map(
+          parent => tables.discourses.filter(row => row.parentUuid === parent)
+        );
+        for (let i = 0; i < discourseRowsByParent.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all(
+            discourseRowsByParent[i].map(row =>
+              TextDiscourseDao.insertDiscourseRow(row, trx)
+            )
+          );
+        }
+
+        // Epigraphy
+        const epigraphyRowParents = [
+          ...new Set(tables.epigraphies.map(row => row.parentUuid)),
+        ];
+        const epigraphyRowsByParent: TextEpigraphyRow[][] = epigraphyRowParents.map(
+          parent => tables.epigraphies.filter(row => row.parentUuid === parent)
+        );
+        for (let i = 0; i < epigraphyRowsByParent.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          await Promise.all(
+            epigraphyRowsByParent[i].map(row =>
+              TextEpigraphyDao.insertEpigraphyRow(row, trx)
+            )
+          );
+        }
+
+        // Markup
+        await Promise.all(
+          tables.markups.map(row => TextMarkupDao.insertMarkupRow(row, trx))
+        );
+
+        // Public Denylist
+        await PublicDenylistDao.addItemsToDenylist(
+          [tables.text.uuid],
+          'text',
+          trx
+        );
+
+        // Item Properties
+        await ItemPropertiesDao.insertItemPropertyRows(
+          tables.itemProperties,
+          trx
+        );
+      });
+
+      await cache.clear(`/collection/${tables.hierarchy.objectParentUuid}`, {
+        level: 'exact',
+      });
+
+      res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  })
   .patch(authenticatedRoute, async (req, res, next) => {
     try {
       const CollectionTextUtils = sl.get('CollectionTextUtils');
@@ -209,124 +327,6 @@ router
       });
 
       res.status(204).end();
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
-
-router
-  .route('/epigraphies')
-  .post(permissionsRoute('ADD_NEW_TEXTS'), async (req, res, next) => {
-    try {
-      const TextDao = sl.get('TextDao');
-      const HierarchyDao = sl.get('HierarchyDao');
-      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-      const ResourceDao = sl.get('ResourceDao');
-      const TextDiscourseDao = sl.get('TextDiscourseDao');
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
-      const TextMarkupDao = sl.get('TextMarkupDao');
-      const PublicDenylistDao = sl.get('PublicDenylistDao');
-      const TreeDao = sl.get('TreeDao');
-      const utils = sl.get('utils');
-      const cache = sl.get('cache');
-
-      const { tables }: CreateTextsPayload = req.body;
-
-      const addingToExistingText = await TextDao.textExists(tables.text.uuid);
-
-      await utils.createTransaction(async trx => {
-        // Text
-        if (!addingToExistingText) {
-          await TextDao.insertTextRow(tables.text, trx);
-        } else {
-          await TextDao.updateTextInfo(
-            tables.text.uuid,
-            tables.text.excavationPrefix,
-            tables.text.excavationNumber,
-            tables.text.museumPrefix,
-            tables.text.museumNumber,
-            tables.text.publicationPrefix,
-            tables.text.publicationNumber,
-            trx
-          );
-        }
-
-        // Hierarchy
-        if (!addingToExistingText) {
-          await HierarchyDao.insertHierarchyRow(tables.hierarchy, trx);
-        }
-
-        // Resource
-        await Promise.all(
-          tables.resources.map(row => ResourceDao.insertResourceRow(row, trx))
-        );
-
-        // Link
-        await Promise.all(
-          tables.links.map(row => ResourceDao.insertLinkRow(row, trx))
-        );
-
-        // Tree
-        await Promise.all(
-          tables.trees.map(row => TreeDao.insertTreeRow(row, trx))
-        );
-
-        // Discourse
-        const discourseRowParents = [
-          ...new Set(tables.discourses.map(row => row.parentUuid)),
-        ];
-        const discourseRowsByParent: TextDiscourseRow[][] = discourseRowParents.map(
-          parent => tables.discourses.filter(row => row.parentUuid === parent)
-        );
-        for (let i = 0; i < discourseRowsByParent.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            discourseRowsByParent[i].map(row =>
-              TextDiscourseDao.insertDiscourseRow(row, trx)
-            )
-          );
-        }
-
-        // Epigraphy
-        const epigraphyRowParents = [
-          ...new Set(tables.epigraphies.map(row => row.parentUuid)),
-        ];
-        const epigraphyRowsByParent: TextEpigraphyRow[][] = epigraphyRowParents.map(
-          parent => tables.epigraphies.filter(row => row.parentUuid === parent)
-        );
-        for (let i = 0; i < epigraphyRowsByParent.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await Promise.all(
-            epigraphyRowsByParent[i].map(row =>
-              TextEpigraphyDao.insertEpigraphyRow(row, trx)
-            )
-          );
-        }
-
-        // Markup
-        await Promise.all(
-          tables.markups.map(row => TextMarkupDao.insertMarkupRow(row, trx))
-        );
-
-        // Public Denylist
-        await PublicDenylistDao.addItemsToDenylist(
-          [tables.text.uuid],
-          'text',
-          trx
-        );
-
-        // Item Properties
-        await ItemPropertiesDao.insertItemPropertyRows(
-          tables.itemProperties,
-          trx
-        );
-      });
-
-      await cache.clear(`/collection/${tables.hierarchy.objectParentUuid}`, {
-        level: 'exact',
-      });
-
-      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

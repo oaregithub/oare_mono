@@ -17,11 +17,8 @@ async function getGroupPermissions(groupId: number): Promise<PermissionItem[]> {
 
 async function addGroupPermission(
   groupId: string,
-  permission: PermissionItem
+  payload: UpdatePermissionPayload
 ): Promise<void> {
-  const payload: UpdatePermissionPayload = {
-    permission,
-  };
   await axios.post(`/permissions/${groupId}`, payload);
 }
 
