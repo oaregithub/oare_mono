@@ -1,27 +1,47 @@
-import { AddDenylistAllowlistPayload, DenylistAllowlist } from '@oare/types';
-import axios from '@/axiosInstance';
+import { DenylistAllowlistItem, DenylistAllowlistPayload } from '@oare/types';
+import axios from '../axiosInstance';
 
-async function getGroupAllowlist(groupId: number): Promise<DenylistAllowlist> {
-  const { data } = await axios.get(`/group_allowlist/${groupId}`);
+async function getGroupAllowlistTexts(
+  groupId: number
+): Promise<DenylistAllowlistItem[]> {
+  const { data } = await axios.get(`/group_allowlist/${groupId}/text`);
   return data;
 }
 
-async function addToGroupAllowlist(
-  groupId: number,
-  payload: AddDenylistAllowlistPayload
+async function getGroupAllowlistCollections(
+  groupId: number
+): Promise<DenylistAllowlistItem[]> {
+  const { data } = await axios.get(`/group_allowlist/${groupId}/collection`);
+  return data;
+}
+
+async function getGroupAllowlistImages(
+  groupId: number
+): Promise<DenylistAllowlistItem[]> {
+  const { data } = await axios.get(`/group_allowlist/${groupId}/img`);
+  return data;
+}
+
+async function addItemsToGroupAllowlist(
+  payload: DenylistAllowlistPayload,
+  groupId: number
 ): Promise<void> {
   await axios.post(`/group_allowlist/${groupId}`, payload);
 }
 
-async function removeFromGroupAllowlist(
-  groupId: number,
-  uuid: string
+async function removeItemsFromGroupAllowlist(
+  uuids: string[],
+  groupId: number
 ): Promise<void> {
-  await axios.delete(`/group_allowlist/${groupId}/${uuid}`);
+  await Promise.all(
+    uuids.map(uuid => axios.delete(`/group_allowlist/${groupId}/${uuid}`))
+  );
 }
 
 export default {
-  getGroupAllowlist,
-  addToGroupAllowlist,
-  removeFromGroupAllowlist,
+  getGroupAllowlistTexts,
+  getGroupAllowlistCollections,
+  getGroupAllowlistImages,
+  addItemsToGroupAllowlist,
+  removeItemsFromGroupAllowlist,
 };

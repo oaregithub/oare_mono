@@ -1,7 +1,6 @@
 <template>
   <div>
     <error-log-dialog
-      v-if="dialogError"
       :error="dialogError"
       :key="dialogError.uuid"
       v-model="showErrorDetails"
@@ -117,7 +116,7 @@ import {
   watch,
 } from '@vue/composition-api';
 import { DataTableHeader, DataOptions } from 'vuetify';
-import { ErrorsRowWithUser, ErrorStatus, ErrorsSortType } from '@oare/types';
+import { ErrorsRowWithUser, ErrorStatus, SortType } from '@oare/types';
 import sl from '@/serviceLocator';
 import useQueryParam from '@/hooks/useQueryParam';
 import ErrorLogDialog from '@/views/Admin/ErrorLog/components/ErrorLogDialog.vue';
@@ -151,7 +150,7 @@ export default defineComponent({
 
     const errorList: Ref<ErrorsRowWithUser[]> = ref([]);
     const selectedErrors: Ref<ErrorsRowWithUser[]> = ref([]);
-    const dialogError: Ref<ErrorsRowWithUser | undefined> = ref();
+    const dialogError: Ref<Partial<ErrorsRowWithUser>> = ref({});
     const serverCount = ref(0);
 
     const page = useQueryParam('page', '1', false);
@@ -188,17 +187,22 @@ export default defineComponent({
     const getErrorLog = async () => {
       try {
         searchLoading.value = true;
-
-        const response = await server.getErrorLog(
-          status.value as ErrorStatus | '',
-          user.value,
-          description.value,
-          stacktrace.value,
-          sort.value as ErrorsSortType,
-          desc.value === 'true',
-          Number(page.value),
-          Number(limit.value)
-        );
+        const response = await server.getErrorLog({
+          filters: {
+            status: status.value as ErrorStatus | '',
+            user: user.value,
+            description: description.value,
+            stacktrace: stacktrace.value,
+          },
+          sort: {
+            type: sort.value as SortType,
+            desc: desc.value === 'true',
+          },
+          pagination: {
+            page: Number(page.value),
+            limit: Number(limit.value),
+          },
+        });
         errorList.value = response.errors;
         serverCount.value = response.count;
       } catch (err) {
@@ -224,9 +228,7 @@ export default defineComponent({
     };
 
     const updateStatus = async (status: ErrorStatus) => {
-      if (dialogError.value) {
-        dialogError.value.status = status;
-      }
+      dialogError.value.status = status;
       await getErrorLog();
     };
 

@@ -133,9 +133,12 @@ export default defineComponent({
     ) => {
       try {
         if (isAllowed) {
-          await server.addGroupPermission(groupId, permission);
+          const payload: UpdatePermissionPayload = {
+            permission,
+          };
+          await server.addGroupPermission(groupId, payload);
         } else {
-          await server.removeGroupPermission(groupId, permission.name);
+          await server.removePermission(groupId, permission.name);
         }
         groupPermissions.value = await server.getGroupPermissions(
           Number(groupId)

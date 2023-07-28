@@ -7,7 +7,7 @@ async function register(payload: RegisterPayload): Promise<User> {
     '/register',
     payload
   );
-  await firebase.auth().signInWithCustomToken(data.token);
+  await firebase.auth().signInWithCustomToken(data.firebaseToken);
   return data.user;
 }
 

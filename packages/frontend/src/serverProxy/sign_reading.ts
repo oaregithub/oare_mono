@@ -1,23 +1,35 @@
 import axios from '@/axiosInstance';
-import { Sign } from '@oare/types';
+import { SignCode, SignListResponse } from '@oare/types';
 
-async function getAllSigns(): Promise<Sign[]> {
-  const { data } = await axios.get('/signs');
+async function getSignCode(sign: string, post: string): Promise<SignCode> {
+  const { data } = await axios.get(
+    `/sign_reading/code/${encodeURIComponent(sign)}/${post}`
+  );
   return data;
 }
 
-async function getSign(uuid: string): Promise<Sign> {
-  const { data } = await axios.get(`/signs/${uuid}`);
+async function getFormattedSign(text: string): Promise<string[]> {
+  const { data } = await axios.get(
+    `/sign_reading/format/${encodeURIComponent(text)}`
+  );
   return data;
 }
 
-async function getSignByReading(reading: string): Promise<Sign> {
-  const { data } = await axios.get(`/signs/reading/${reading}`);
+async function getSignList(
+  sortBy: string,
+  allSigns: string
+): Promise<SignListResponse> {
+  const { data } = await axios.get('/signList', {
+    params: {
+      sortBy,
+      allSigns,
+    },
+  });
   return data;
 }
 
 export default {
-  getAllSigns,
-  getSign,
-  getSignByReading,
+  getSignCode,
+  getFormattedSign,
+  getSignList,
 };

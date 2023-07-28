@@ -1,15 +1,16 @@
 import { CreateCommentPayload } from '@oare/types';
-import axios from '@/axiosInstance';
+import axios from '../axiosInstance';
 
-async function createComment(payload: CreateCommentPayload): Promise<void> {
-  await axios.post('/comments', payload);
+async function insertComment(payload: CreateCommentPayload): Promise<string> {
+  const { data } = await axios.post('/comments', payload);
+  return data;
 }
 
 async function deleteComment(uuid: string): Promise<void> {
-  await axios.delete(`/comments/${uuid}`);
+  await axios.delete(`/comments/${encodeURIComponent(uuid)}`);
 }
 
 export default {
-  createComment,
+  insertComment,
   deleteComment,
 };

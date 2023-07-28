@@ -9,7 +9,6 @@
     :closeButton="true"
     :width="750"
     :persistent="false"
-    :showActionsBar="false"
   >
     <v-container>
       <v-row class="py-2">

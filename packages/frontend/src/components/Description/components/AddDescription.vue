@@ -60,12 +60,11 @@ export default defineComponent({
     const save = async () => {
       isSaving.value = true;
       try {
-        await server.addFieldDescription(
-          props.referenceUuid,
-          description.value,
-          props.nextPrimacy,
-          true
-        ); // FIXME true isn't necessarily accurate. need a prop or something
+        await server.createNewPropertyDescriptionField({
+          referenceUuid: props.referenceUuid,
+          description: description.value,
+          primacy: props.nextPrimacy,
+        });
         actions.showSnackbar('Successfully updated description');
       } catch (err) {
         actions.showErrorSnackbar(

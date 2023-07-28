@@ -1,69 +1,67 @@
 import {
-  CreateThreadPayload,
-  Pagination,
+  AllCommentsRequest,
+  AllCommentsResponse,
   Thread,
-  ThreadStatus,
-  ThreadsSortType,
-  UpdateThreadNamePayload,
-  UpdateThreadStatusPayload,
+  ThreadWithComments,
+  UpdateThreadNameRequest,
+  CreateThreadPayload,
 } from '@oare/types';
-import axios from '@/axiosInstance';
+import axios from '../axiosInstance';
 
-async function getThreadsByReferenceUuid(
-  referenceUuid: string
-): Promise<Thread[]> {
-  const { data } = await axios.get(`/threads/${referenceUuid}`);
+async function createThread(payload: CreateThreadPayload): Promise<string> {
+  const { data } = await axios.post('/threads', payload);
   return data;
 }
 
-async function updateThreadStatus(
-  uuid: string,
-  payload: UpdateThreadStatusPayload
-): Promise<void> {
-  await axios.patch(`/threads/status/${uuid}`, payload);
+async function getThreadsWithCommentsByReferenceUuid(
+  referenceUuid: string
+): Promise<ThreadWithComments[]> {
+  const { data } = await axios.get(
+    `/threads/${encodeURIComponent(referenceUuid)}`
+  );
+  return data;
+}
+
+async function updateThread(thread: Thread): Promise<void> {
+  await axios.put('/threads', thread);
 }
 
 async function updateThreadName(
-  uuid: string,
-  payload: UpdateThreadNamePayload
+  threadNameRequest: UpdateThreadNameRequest
 ): Promise<void> {
-  await axios.patch(`/threads/name/${uuid}`, payload);
+  await axios.put('/threads/name', threadNameRequest);
 }
 
-async function getThreads(
-  status: ThreadStatus | '',
-  name: string,
-  sort: ThreadsSortType,
-  desc: boolean,
-  pagination: Pagination
-): Promise<Thread[]> {
+async function getAllThreads(
+  request: AllCommentsRequest
+): Promise<AllCommentsResponse> {
   const { data } = await axios.get('/threads', {
     params: {
-      status,
-      name,
-      sort,
-      desc,
-      ...pagination,
+      status: request.filters.status,
+      thread: request.filters.thread,
+      item: request.filters.item,
+      comment: request.filters.comment,
+      sortType: request.sort.type,
+      sortDesc: request.sort.desc ? '1' : '0',
+      page: request.pagination.page,
+      limit: request.pagination.limit,
+      filter: request.pagination.filter || '',
+      isUserComments: request.isUserComments ? '1' : '0',
     },
   });
   return data;
 }
 
-async function createThread(payload: CreateThreadPayload): Promise<void> {
-  const { data } = await axios.post('/threads', payload);
-  return data;
-}
-
 async function newThreadsExist(): Promise<boolean> {
-  const { data } = await axios.get('/new_threads');
+  const { data } = await axios.get('/newthreads');
   return data;
 }
 
 export default {
-  getThreadsByReferenceUuid,
-  updateThreadStatus,
+  getThreadsWithCommentsByReferenceUuid,
+  updateThread,
+  getAllThreads,
   updateThreadName,
-  getThreads,
-  createThread,
   newThreadsExist,
+  createThread,
 };

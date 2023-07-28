@@ -55,7 +55,7 @@
 <script lang="ts">
 import _ from 'lodash';
 import { defineComponent, ref, Ref, onMounted } from '@vue/composition-api';
-import { UserWithGroups } from '@oare/types';
+import { GetUserResponse } from '@oare/types';
 import sl from '@/serviceLocator';
 
 export default defineComponent({
@@ -70,9 +70,9 @@ export default defineComponent({
     const deleteUserDialog = ref(false);
     const loading = ref(true);
 
-    const allUsers: Ref<UserWithGroups[]> = ref([]);
-    const groupUsers: Ref<UserWithGroups[]> = ref([]);
-    const selectedDeleteUsers: Ref<UserWithGroups[]> = ref([]);
+    const allUsers: Ref<GetUserResponse[]> = ref([]);
+    const groupUsers: Ref<GetUserResponse[]> = ref([]);
+    const selectedDeleteUsers: Ref<GetUserResponse[]> = ref([]);
     const usersHeaders = ref([{ text: 'Name', value: 'name' }]);
     const server = sl.get('serverProxy');
     const actions = sl.get('globalActions');
@@ -81,7 +81,7 @@ export default defineComponent({
       const userUuids = selectedDeleteUsers.value.map(user => user.uuid);
       deleteUserLoading.value = true;
       try {
-        await server.removeUsersFromGroup(Number(groupId), userUuids);
+        await server.removeUsersFromGroup(Number(groupId), { userUuids });
         deleteUserDialog.value = false;
         selectedDeleteUsers.value = [];
         actions.showSnackbar('Successfully removed user(s).');

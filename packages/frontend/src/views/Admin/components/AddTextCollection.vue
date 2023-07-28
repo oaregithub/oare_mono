@@ -157,6 +157,7 @@ import {
   PermissionsListType,
   Pagination,
   DenylistAllowlistItem,
+  DenylistAllowlistPayload,
 } from '@oare/types';
 import { DataTableHeader, DataOptions } from 'vuetify';
 import useQueryParam from '@/hooks/useQueryParam';
@@ -179,11 +180,7 @@ export default defineComponent({
     },
     addItems: {
       type: Function as PropType<
-        (
-          uuids: string[],
-          type: 'text' | 'collection' | 'img',
-          groupId?: Number
-        ) => void
+        (payload: DenylistAllowlistPayload, groupId?: Number) => void
       >,
       required: true,
     },
@@ -301,9 +298,13 @@ export default defineComponent({
           break;
       }
 
+      const payload: DenylistAllowlistPayload = {
+        uuids,
+        type: type,
+      };
       addItemsLoading.value = true;
       try {
-        await addItems(uuids, type, Number(groupId));
+        await addItems(payload, Number(groupId));
         actions.showSnackbar(
           `Successfully added ${itemType.toLowerCase()}(s).`
         );
@@ -327,7 +328,7 @@ export default defineComponent({
       try {
         await getItems();
         groupName.value = groupId
-          ? (await server.getGroup(Number(groupId))).name
+          ? (await server.getGroupInfo(Number(groupId))).name
           : 'Public Denylist';
       } catch (err) {
         actions.showErrorSnackbar(

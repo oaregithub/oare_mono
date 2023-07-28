@@ -3,9 +3,23 @@ import {
   ItemPropertyRow,
   TaxonomyPropertyTree,
   LinkItem,
+  TableReferenceType,
   LinkPropertiesSearchPayload,
+  AppliedProperty,
 } from '@oare/types';
-import axios from '@/axiosInstance';
+import axios from '../axiosInstance';
+
+async function editPropertiesByReferenceUuid(
+  referenceUuid: string,
+  properties: AppliedProperty[],
+  wordUuid?: string
+): Promise<void> {
+  const payload: EditPropertiesPayload = {
+    properties,
+    wordUuid,
+  };
+  await axios.patch(`/properties/edit/${referenceUuid}`, payload);
+}
 
 async function getPropertiesByReferenceUuid(
   referenceUuid: string
@@ -14,21 +28,21 @@ async function getPropertiesByReferenceUuid(
   return data;
 }
 
-async function editPropertiesByReferenceUuid(
-  referenceUuid: string,
-  payload: EditPropertiesPayload
-): Promise<void> {
-  await axios.patch(`/properties/${referenceUuid}`, payload);
-}
-
 async function getTaxonomyPropertyTree(): Promise<TaxonomyPropertyTree> {
   const { data } = await axios.get('properties_taxonomy_tree');
   return data;
 }
 
 async function searchLinkProperties(
-  params: LinkPropertiesSearchPayload
+  search: string,
+  tableReference: TableReferenceType,
+  textUuidFilter?: string
 ): Promise<LinkItem[]> {
+  const params: LinkPropertiesSearchPayload = {
+    search,
+    tableReference,
+    textUuidFilter,
+  };
   const { data } = await axios.get('properties_links', {
     params,
   });

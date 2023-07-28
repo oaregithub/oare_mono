@@ -1,30 +1,21 @@
 import axios from '@/axiosInstance';
-import { Bibliography } from '@oare/types';
+import { BibliographyResponse } from '@oare/types';
 
-async function getAllBibliographies(
-  citationStyle?: string
-): Promise<Bibliography[]> {
+async function getBibliographies(params: {
+  citationStyle: string;
+}): Promise<BibliographyResponse[]> {
   const { data } = await axios.get('/bibliographies', {
-    params: {
-      citationStyle,
-    },
+    params,
   });
   return data;
 }
 
-async function getBibliography(
-  uuid: string,
-  citationStyle?: string
-): Promise<Bibliography> {
-  const { data } = await axios.get(`/bibliography/${uuid}`, {
-    params: {
-      citationStyle,
-    },
-  });
+async function getBibliography(uuid: string): Promise<BibliographyResponse> {
+  const { data } = await axios.get(`/bibliography/${uuid}`);
   return data;
 }
 
 export default {
-  getAllBibliographies,
+  getBibliographies,
   getBibliography,
 };

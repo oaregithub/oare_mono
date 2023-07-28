@@ -1,27 +1,43 @@
-import { GroupEditPermissionsPayload, Text } from '@oare/types';
-import axios from '@/axiosInstance';
+import { DenylistAllowlistItem, DenylistAllowlistPayload } from '@oare/types';
+import axios from '../axiosInstance';
 
-async function getGroupEditPermissions(groupId: number): Promise<Text[]> {
-  const { data } = await axios.get(`/group_edit_permissions/${groupId}`);
+async function getGroupTextEditPermissions(
+  groupId: number
+): Promise<DenylistAllowlistItem[]> {
+  const { data } = await axios.get(`/group_edit_permissions/${groupId}/text`);
   return data;
 }
 
-async function addToGroupEditPermissions(
-  groupId: number,
-  payload: GroupEditPermissionsPayload
+async function getGroupCollectionEditPermissions(
+  groupId: number
+): Promise<DenylistAllowlistItem[]> {
+  const { data } = await axios.get(
+    `/group_edit_permissions/${groupId}/collection`
+  );
+  return data;
+}
+
+async function addItemsToGroupEditPermissions(
+  payload: DenylistAllowlistPayload,
+  groupId: number
 ): Promise<void> {
   await axios.post(`/group_edit_permissions/${groupId}`, payload);
 }
 
-async function removeFromGroupEditPermissions(
-  groupId: number,
-  uuid: string
+async function removeItemsFromGroupEditPermissions(
+  uuids: string[],
+  groupId: number
 ): Promise<void> {
-  await axios.delete(`/group_edit_permissions/${groupId}/${uuid}`);
+  await Promise.all(
+    uuids.map(uuid =>
+      axios.delete(`/group_edit_permissions/${groupId}/${uuid}`)
+    )
+  );
 }
 
 export default {
-  getGroupEditPermissions,
-  addToGroupEditPermissions,
-  removeFromGroupEditPermissions,
+  getGroupTextEditPermissions,
+  getGroupCollectionEditPermissions,
+  addItemsToGroupEditPermissions,
+  removeItemsFromGroupEditPermissions,
 };

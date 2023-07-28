@@ -2,9 +2,6 @@ import Vue from 'vue';
 import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
 
-/**
- * Loads all base components in the application.
- */
 export default function () {
   const requireComponent = require.context(
     '@/components/base',

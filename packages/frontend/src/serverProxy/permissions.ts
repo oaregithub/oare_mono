@@ -6,12 +6,17 @@ import {
 } from '@oare/types';
 
 async function getUserPermissions(): Promise<PermissionItem[]> {
-  const { data } = await axios.get('/user_permissions');
+  const { data } = await axios.get('/userpermissions');
   return data;
 }
 
 async function getGroupPermissions(groupId: number): Promise<PermissionItem[]> {
   const { data } = await axios.get(`/permissions/${groupId}`);
+  return data;
+}
+
+async function getAllPermissions(): Promise<PermissionItem[]> {
+  const { data } = await axios.get('/allpermissions');
   return data;
 }
 
@@ -22,16 +27,11 @@ async function addGroupPermission(
   await axios.post(`/permissions/${groupId}`, payload);
 }
 
-async function removeGroupPermission(
+async function removePermission(
   groupId: string,
   permission: PermissionName
 ): Promise<void> {
   await axios.delete(`/permissions/${groupId}/${permission}`);
-}
-
-async function getAllPermissions(): Promise<PermissionItem[]> {
-  const { data } = await axios.get('/all_permissions');
-  return data;
 }
 
 export default {
@@ -39,5 +39,5 @@ export default {
   getGroupPermissions,
   getAllPermissions,
   addGroupPermission,
-  removeGroupPermission,
+  removePermission,
 };

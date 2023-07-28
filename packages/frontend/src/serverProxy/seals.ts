@@ -1,17 +1,12 @@
-import axios from '@/axiosInstance';
-import {
-  ConnectSealImpressionPayload,
-  ItemProperty,
-  Seal,
-  SealCore,
-} from '@oare/types';
+import { AddSealLinkPayload, Seal, SealInfo } from '@oare/types';
+import axios from '../axiosInstance';
 
-async function getSeals(): Promise<SealCore[]> {
+async function getAllSeals(): Promise<SealInfo[]> {
   const { data } = await axios.get('/seals');
   return data;
 }
 
-async function getSeal(uuid: string): Promise<Seal> {
+async function getSealByUuid(uuid: string): Promise<Seal> {
   const { data } = await axios.get(`/seals/${uuid}`);
   return data;
 }
@@ -20,21 +15,13 @@ async function updateSealName(uuid: string, name: string): Promise<void> {
   await axios.patch(`/seals/${uuid}`, { name });
 }
 
-async function addSealLink(
-  payload: ConnectSealImpressionPayload
-): Promise<void> {
-  await axios.patch('/seal_impression', payload);
-}
-
-async function getSealImpression(uuid: string): Promise<ItemProperty> {
-  const { data } = await axios.get(`/seal_impression/${uuid}`);
-  return data;
+async function addSealLink(payload: AddSealLinkPayload): Promise<void> {
+  await axios.post('/connect/seal_impression', payload);
 }
 
 export default {
-  getSeals,
-  getSeal,
-  updateSealName,
   addSealLink,
-  getSealImpression,
+  getAllSeals,
+  getSealByUuid,
+  updateSealName,
 };

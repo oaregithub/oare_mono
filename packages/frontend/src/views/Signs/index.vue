@@ -95,7 +95,7 @@ import {
 import { DataTableHeader } from 'vuetify';
 import sl from '@/serviceLocator';
 import OareContentView from '@/components/base/OareContentView.vue';
-import { Sign } from '@oare/types';
+import { SignList } from '@oare/types';
 import _ from 'lodash';
 
 export interface OareDataTableOptions {
@@ -156,8 +156,8 @@ export default defineComponent({
       },
     ]);
 
-    const items: Ref<Sign[]> = ref([]);
-    const filteredItems: Ref<Sign[]> = ref([]);
+    const items: Ref<SignList[]> = ref([]);
+    const filteredItems: Ref<SignList[]> = ref([]);
 
     const getWidth = (src: string) => {
       const image = new Image();
@@ -186,12 +186,35 @@ export default defineComponent({
       return finishedCodeArray.join('');
     };
 
+    const filterSigns = () => {
+      filteredItems.value = items.value.filter(
+        item =>
+          item.abz
+            ?.toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          `${item.frequency}`
+            .toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          `${item.mzl}`
+            .toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          item.name
+            .toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase()) ||
+          item.readings
+            ?.toLocaleLowerCase()
+            .includes(search.value.toLocaleLowerCase())
+      );
+    };
+
     const getSigns = async () => {
       loading.value = true;
       items.value = [];
       filteredItems.value = [];
       try {
-        items.value = await server.getAllSigns();
+        const response = await server.getSignList(sortBy.value, allSigns.value);
+        items.value = response.result;
+        filterSigns();
       } catch (err) {
         actions.showErrorSnackbar(
           'Error sorting signs. Please try again.',
@@ -203,6 +226,10 @@ export default defineComponent({
     };
 
     watch([sortBy, allSigns], getSigns);
+
+    watch(search, _.debounce(filterSigns, 100), {
+      immediate: false,
+    });
 
     onMounted(async () => {
       await getSigns();

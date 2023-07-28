@@ -111,7 +111,7 @@ import {
   PropType,
 } from '@vue/composition-api';
 import sl from '@/serviceLocator';
-import { FieldRow, PropertyValue, PropertyVariable } from '@oare/types';
+import { FieldInfo, PropertyValue, PropertyVariable } from '@oare/types';
 
 export default defineComponent({
   name: 'PropertyInfo',
@@ -160,12 +160,12 @@ export default defineComponent({
       if (reactiveFieldUuid.value) {
         isSaving.value = true;
         try {
-          await server.updateFieldDescription(
-            reactiveFieldUuid.value,
-            newDescription.value,
-            newPrimacy.value,
-            true
-          ); // FIXME true isn't necessarily true
+          await server.updatePropertyDescriptionField({
+            uuid: reactiveFieldUuid.value,
+            description: newDescription.value,
+            primacy: newPrimacy.value,
+            location: 'taxonomyTree',
+          });
 
           await assignNewValues();
           actions.showSnackbar('Successfully updated description');
@@ -183,13 +183,11 @@ export default defineComponent({
     const addDescription = async () => {
       try {
         isSaving.value = true;
-
-        await server.addFieldDescription(
-          props.propertyItem.uuid,
-          newDescription.value,
-          newPrimacy.value,
-          true
-        ); // FIXME true isn't necessarily true
+        await server.createNewPropertyDescriptionField({
+          referenceUuid: props.propertyItem.uuid,
+          description: newDescription.value,
+          primacy: newPrimacy.value,
+        });
 
         await assignNewValues();
         actions.showSnackbar('Successfully added new description');
@@ -204,9 +202,9 @@ export default defineComponent({
     };
 
     const assignNewValues = async () => {
-      const newProps: FieldRow = (
-        await server.getFieldDescriptions(props.propertyItem.uuid)
-      )[0];
+      const newProps: FieldInfo = await server.getFieldInfo(
+        props.propertyItem.uuid
+      );
       newDescription.value = newProps.field ?? 'none';
       newPrimacy.value = newProps.primacy ?? 0;
       newLanguage.value =

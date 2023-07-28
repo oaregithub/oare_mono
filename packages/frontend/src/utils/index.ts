@@ -1,82 +1,54 @@
 import {
   DictionaryForm,
   DictionaryFormGrammar,
-  ItemProperty,
+  ItemPropertyRow,
 } from '@oare/types';
 import { DateTime } from 'luxon';
 import sl from '@/serviceLocator';
 
-/**
- * Gets the clitic suffix UUUID given the form properties.
- * @param properties An array of form properties.
- * @returns The UUID of the clitic suffix, or null if it doesn't exist.
- */
-function getCliticSuffixUuid(properties: ItemProperty[]): string | null {
+function getCliticSuffixUuid(properties: ItemPropertyRow[]): string | null {
   const cliticRow = properties.find(
-    row =>
-      row.variableRow.name === 'Clitic' &&
-      row.valueRow &&
-      row.valueRow.name === 'Suffix pronoun'
+    row => row.variableName === 'Clitic' && row.valueName === 'Suffix pronoun'
   );
   return cliticRow ? cliticRow.uuid : null;
 }
 
-/**
- * Retrieves the value abbreviations for a given variable.
- * @param variable The variable to retrieve the values for.
- * @param properties The form properties.
- * @param cliticUuid The UUID of the clitic suffix.
- * @returns Array of value abbreviations.
- */
 function getVariables(
   variable: string,
-  properties: ItemProperty[],
+  properties: ItemPropertyRow[],
   cliticUuid: string | null
 ): string[] {
   const valueRows = properties.filter(
-    row => row.variableRow.name === variable && row.parentUuid !== cliticUuid
+    row => row.variableName === variable && row.parentUuid !== cliticUuid
   );
 
   const values = valueRows
-    .map(row => row.valueRow?.abbreviation || '')
+    .map(row => row.valAbbreviation || '')
     .filter(row => row !== '');
   return values;
 }
 
-/**
- * Retrieves the suffix variables for a given variable.
- * @param variable The variable to retrieve the values for.
- * @param properties The form properties.
- * @param cliticUuid The UUID of the clitic suffix.
- * @returns Array of value abbreviations.
- */
 function getSuffixVariables(
   variable: string,
-  properties: ItemProperty[],
+  properties: ItemPropertyRow[],
   cliticUuid: string
 ): string[] {
   const valueRows = properties.filter(
-    row => row.variableRow.name === variable && row.parentUuid === cliticUuid
+    row => row.variableName === variable && row.parentUuid === cliticUuid
   );
 
   const values = valueRows
-    .map(row => row.valueRow?.abbreviation || '')
+    .map(row => row.valAbbreviation || '')
     .filter(row => row !== '');
   return values;
 }
 
-/**
- * Generates the form grammar object for a given form.
- * @param form The form to generate the grammar for.
- * @returns A form grammar object.
- */
 export const generateFormGrammar = (
-  form: DictionaryForm
+  form: DictionaryForm | Omit<DictionaryForm, 'spellings'>
 ): DictionaryFormGrammar => {
   const cliticSuffixUuid = getCliticSuffixUuid(form.properties);
 
   let suffix = null;
-
   if (cliticSuffixUuid) {
     const [persons, cases, genders, grammaticalNumbers] = [
       'Person',
@@ -137,12 +109,9 @@ export const generateFormGrammar = (
   };
 };
 
-/**
- * Generates a string representation of the form grammar for a given form.
- * @param form The form to generate the grammar for.
- * @returns A string representation of the form grammar.
- */
-export const formGrammarString = (form: DictionaryForm): string => {
+const formGrammarString = (
+  form: DictionaryForm | Omit<DictionaryForm, 'spellings'>
+): string => {
   const formGrammar = generateFormGrammar(form);
 
   let suffix = '';
@@ -179,19 +148,11 @@ export const formGrammarString = (form: DictionaryForm): string => {
     .join('')}${suffix}`.trim();
 };
 
-/**
- * Formats a timestamp to a human-readable string.
- * @param timestamp The Date timestamp to format.
- * @returns A human-readable string representation of the timestamp.
- */
 export const formatTimestamp = (timestamp: Date) =>
   DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
     DateTime.DATETIME_MED
   );
 
-/**
- * Resets the admin badge by checking if new threads or errors exist.
- */
 export const resetAdminBadge = async () => {
   const server = sl.get('serverProxy');
   const store = sl.get('store');
@@ -203,4 +164,8 @@ export const resetAdminBadge = async () => {
     error: errorBadge,
     comments: commentsBadge,
   });
+};
+
+export default {
+  formGrammarString,
 };
