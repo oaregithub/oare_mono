@@ -446,7 +446,6 @@ const createEditorRows = async (
               parentUuid,
               side: sideNumber,
               column: columnNumber,
-              line: row.lines[0],
               discourseUuid: row.regionDiscourseUuid,
             }
           );
