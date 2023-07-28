@@ -45,15 +45,13 @@ This is a full-stack project. As such, you'll be writing code for both the front
 
 On the frontend, we primarily use [Vue.js](https://vuejs.org), a framework that simplifies frontend logic and allows us to create reusable and scalable components. Specifically, we make use of the [Vue Composition API](https://v3.vuejs.org/guide/composition-api-introduction.html#why-composition-api), which has some important differences from the regular Vue CLI you may be familiar with. When compiled, Vue turns the code we write into valid HTML, CSS, and Javascript for use on the end browser. Additionally, to simplify our work, we use [Vuetify](https://vuetifyjs.com/en/), a Vue framework that makes applying Material Design language components extremely easy. By doing so, we can avoid tedious work in CSS by using pre-built UI components.
 
-On the backend, we use [Node.js](https://nodejs.org/en/), a Javascript runtime environment commonly used on servers. Using a package called [Express](https://expressjs.com), we are able to easily write REST APIs to interact with the data we need. We utilize the [Knex.js](https://knexjs.org) framework to wrap SQL statements and interface with the MySQL databse.
+On the backend, we use [Node.js](https://nodejs.org/en/), a Javascript runtime environment commonly used on servers. Using a package called [Express](https://expressjs.com), we are able to easily write REST APIs to interact with the data we need. We utilize the [Knex.js](https://knexjs.org) framework to wrap SQL statements and interface with the MySQL databse. The backend also interfaces with a Redis key-value caching database.
 
 On both the frontend and the backend, as well as in other parts of the project, we use [TypeScript](https://www.typescriptlang.org) code rather than vanilla Javascript. TypeScript is a superset of Javascript, meaning that all valid Javascript is valid TypeScript, but some additional features, such as strict typing enforcement, have been added. When compiled, TypeScript code is converted to Javascript for use in the browser environment. If you are unfamiliar with TypeScript, take some time to familiarize yourself as it is the primary language in the codebase. Documentation for TypeScript can be found [here](https://www.typescriptlang.org/docs/).
 
 ## Communication
 
 We use a number of different applications to communicate and work on the project. Our codebase, project steps, and code assignments are all found in this Github repository. Take some time to familiarize yourself with the repo. We primarily communicate about the project via Slack. If you haven't been added to the Slack workspace, ask the team lead or Dr. Stratford to add you.
-
-In addition to asynchronous work, we also have weekly in-person team meetings and regular individual check-ins with the team lead via Zoom. You will receive details about these meetings within the first few weeks of your start date.
 
 ## Style Guide
 
@@ -103,7 +101,7 @@ Fill out the form to create a new user account using the credentials of your cho
 
 Running this project locally on a Windows machine will require WSL 2 to be installed. WSL, short for Windows Subsystem for Linux, is a utility created by Microsoft that allows you to run a full Linux environment on your machine. With WSL installed, your machine will be able to handle all of the packages and commands that our project uses.
 
-If you are using a Mac, you can skip this step. Because macOS is UNIX-based, all the necessary commands will run properly by default.
+If you are using a Mac, you can skip this step. Because macOS supports UNIX commands, all the necessary commands will run properly by default.
 
 For most PC machines, simply open Powershell as Administrator and run the following command to install WSL:
 
@@ -139,7 +137,7 @@ In the system tray at the bottom-right of your screen, a whale icon should appea
 
 If you do not have a Github account, create one. Then, add an SSH key to your account so you have command line access by following [these instructions](https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account).
 
-You will need to be added as a collaborator to the Github project before you can download the code. The team lead will need to invite you and you will need to accept the invitation in your email.
+Though the GitHub project is publicly visible, you will need to be added as a collaborator to the Github project before you can contribute to it. The team lead will need to invite you and you will need to accept the invitation in your email.
 
 ### For the Team Lead
 
