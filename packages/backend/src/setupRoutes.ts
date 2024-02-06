@@ -36,7 +36,7 @@ import users from '@/api/users';
 /**
  * All API routes are prefixed with this path.
  */
-export const API_PATH = '/api/v2';
+export const API_PATH = '/api/v3';
 
 /**
  * Attaches API routes to the Express app.
