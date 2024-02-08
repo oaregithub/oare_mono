@@ -1,3 +1,6 @@
+/**
+ * This file contains internationalized text for the registration features.
+ */
 export default {
   en: {
     register: 'Register',

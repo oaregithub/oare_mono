@@ -6,18 +6,26 @@ import router from '@/router';
 import { FirebaseError } from '@firebase/util';
 import i18n from '@/i18n';
 
+/**
+ * The host URL for the API. It is set to the local development server when in development mode.
+ */
 const host =
   process.env.NODE_ENV === 'development'
     ? `http://${window.location.hostname}:8081`
     : '';
 
+/**
+ * Customized Axios instance for the application.
+ */
 const axiosInstance = axios.create({
-  baseURL: `${host}/api/v2`,
+  baseURL: `${host}/api/v3`,
 });
 
+// Adds response interceptors to handle errors and refresh the Firebase authentication token if necessary.
 axiosInstance.interceptors.response.use(
   res => res,
   async error => {
+    // If the error is due to a 407 status code, the Firebase authentication token is refreshed and the request is retried.
     if (
       error.config &&
       error.response &&
@@ -45,6 +53,7 @@ axiosInstance.interceptors.response.use(
     }
 
     if (error.response) {
+      // If the error is due to a 403 status code, the user is redirected to the 403 page.
       if (error.response.status === 403) {
         router.replace({
           name: '403',
@@ -53,6 +62,7 @@ axiosInstance.interceptors.response.use(
         return Promise.resolve(error);
       }
 
+      // If the error is due to a 401 status code, the user is redirected to the 401 page.
       if (error.response.status === 401) {
         router.replace({
           name: '401',
@@ -61,6 +71,7 @@ axiosInstance.interceptors.response.use(
         return Promise.resolve(error);
       }
 
+      // If the error is due to a 404 status code, the user is redirected to the 404 page.
       if (error.response.status === 404) {
         router.replace({
           name: '404',
@@ -76,6 +87,7 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+// Adds request interceptors to add the Firebase authentication token, if available, to the request headers.
 axiosInstance.interceptors.request.use(config => {
   if (store.getters.idToken) {
     config.headers.Authorization = store.getters.idToken;
