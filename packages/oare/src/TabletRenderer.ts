@@ -1,20 +1,16 @@
 import {
   EpigraphicUnit,
-  MarkupUnit,
   EpigraphicUnitSide,
-  EpigraphicUnitWithMarkup,
-  EpigraphicWord,
   MarkupType,
   TextFormatType,
   LocaleCode,
+  TextMarkupRow,
 } from '@oare/types';
 import _ from 'lodash';
-
 import {
   getMarkupByDamageType,
   unitMatchesDamageType,
   convertMarkedUpUnitsToLineReading,
-  convertMarkedUpUnitsToEpigraphicWords,
   regionReading,
   undeterminedReading,
   romanNumeral,
@@ -46,7 +42,7 @@ export default class TabletRenderer {
     rendererType: TextFormatType
   ) {
     this.epigraphicUnits = epigraphicUnits;
-    this.epigraphicUnits.sort((a, b) => a.objOnTablet - b.objOnTablet);
+    this.epigraphicUnits.sort((a, b) => a.objectOnTablet - b.objectOnTablet);
     this.locale = locale;
     this.rendererType = rendererType;
     this.sortMarkupUnits();
@@ -55,12 +51,10 @@ export default class TabletRenderer {
 
   private sortMarkupUnits() {
     const damageTypes = ['damage', 'partialDamage', 'erasure'];
+
     this.epigraphicUnits = this.epigraphicUnits.map(unit => ({
       ...unit,
-      markups: unit.markups.sort((a, b) => {
-        // Sort isSealImpression to the top. It's the only region
-        // type that can have multiple markups
-
+      markup: unit.markup.sort((a, b) => {
         if (a.type === 'isSealImpression') {
           return 1;
         }
@@ -81,16 +75,17 @@ export default class TabletRenderer {
   private addLineNumbersToRegions() {
     this.epigraphicUnits = this.epigraphicUnits.reduce<EpigraphicUnit[]>(
       (newUnits, unit) => {
-        if (unit.epigType === 'region') {
-          const { objOnTablet } = unit;
+        if (unit.type === 'region') {
+          const { objectOnTablet } = unit;
           // Find line before this one
           const prevUnitIdx = _.findLastIndex(
             newUnits,
             backUnit =>
-              backUnit.line !== null && backUnit.objOnTablet < objOnTablet
+              backUnit.line !== null && backUnit.objectOnTablet < objectOnTablet
           );
 
           let objLine: number | null = null;
+
           if (prevUnitIdx === -1) {
             objLine = 0.1;
           } else if (newUnits[prevUnitIdx].line !== null) {
@@ -112,19 +107,10 @@ export default class TabletRenderer {
     );
   }
 
-  public tabletReading(): string {
-    const tabletReading = this.sides
-      .map(side => `${side.side!}\n${this.sideReading(side.side!)}`)
-      .join('\n')
-      .trim();
-    return localizeString(tabletReading, this.locale);
-  }
-
   get sides(): EpigraphicUnit[] {
-    return this.epigraphicUnits.filter(unit => unit.epigType === 'section');
+    return this.epigraphicUnits.filter(unit => unit.type === 'section');
   }
 
-  // An ordered list of lines on the tablet
   get lines(): number[] {
     const orderedLines = this.epigraphicUnits
       .filter(unit => unit.line)
@@ -133,50 +119,38 @@ export default class TabletRenderer {
     return Array.from(new Set(orderedLines));
   }
 
-  public sideReading(side: EpigraphicUnitSide): string {
-    const lineReadings: string[] = [];
-    const columns = this.columnsOnSide(side);
-    columns.forEach(column => {
-      this.linesInColumn(column, side).forEach(lineNum => {
-        lineReadings.push(`${this.lineReading(lineNum)}`);
-      });
-    });
-    const sideReading = lineReadings.join('\n');
-    return localizeString(sideReading, this.locale);
-  }
-
   public getRegionUnitByLine(lineNum: number): EpigraphicUnit | null {
     if (this.isRegion(lineNum)) {
       const unitsOnLine = this.getUnitsOnLine(lineNum);
       return unitsOnLine[0];
     }
+
     return null;
   }
 
   public isRegion(lineNum: number): boolean {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
-    return unitsOnLine.length === 1 && unitsOnLine[0].epigType === 'region';
+
+    return unitsOnLine.length === 1 && unitsOnLine[0].type === 'region';
   }
 
   public isRegionType(lineNum: number, type: MarkupType): boolean {
     if (!this.isRegion(lineNum)) {
       return false;
     }
+
     const unitsOnLine = this.getUnitsOnLine(lineNum);
-    return unitsOnLine[0].markups.some(unit => unit.type === type);
+    return unitsOnLine[0].markup.some(unit => unit.type === type);
   }
 
   public isUndetermined(lineNum: number): boolean {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
+
     return (
-      unitsOnLine.length === 1 &&
-      unitsOnLine[0].epigType === 'undeterminedLines'
+      unitsOnLine.length === 1 && unitsOnLine[0].type === 'undeterminedLines'
     );
   }
 
-  /**
-   * Return the epigraphic reading at a specific line number
-   */
   public lineReading(lineNum: number): string {
     const unitsOnLine = this.getUnitsOnLine(lineNum);
 
@@ -188,34 +162,42 @@ export default class TabletRenderer {
       return undeterminedReading(unitsOnLine[0]);
     }
 
-    const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
+    const markedUpEpigraphicUnits = unitsOnLine.map(unit => ({
+      ...unit,
+      reading: this.markedUpEpigraphicReading(unit),
+    }));
+
     const lineReading = convertMarkedUpUnitsToLineReading(
-      charactersWithMarkup,
+      markedUpEpigraphicUnits,
       this.rendererType === 'regular'
     );
+
     return localizeString(lineReading, this.locale);
   }
 
-  public getLineWords(lineNum: number): EpigraphicWord[] {
+  public getLineWords(lineNum: number): EpigraphicUnit[][] {
     const unitsOnLine = this.getUnitsOnLine(lineNum).filter(
-      unit => unit.epigType !== 'line'
+      unit => unit.type !== 'line'
     );
-    const charactersWithMarkup = this.addMarkupToEpigraphicUnits(unitsOnLine);
-    const epigraphicWords = convertMarkedUpUnitsToEpigraphicWords(
-      charactersWithMarkup
-    );
-    return epigraphicWords.map(word => ({
-      ...word,
-      reading: word.reading ? localizeString(word.reading, this.locale) : null,
-      signs: [
-        ...word.signs.map(sign => ({
-          ...sign,
-          reading: sign.reading
-            ? localizeString(sign.reading, this.locale)
-            : null,
-        })),
-      ],
+
+    const markedUpEpigraphicUnits = unitsOnLine.map(unit => ({
+      ...unit,
+      reading: this.markedUpEpigraphicReading(unit),
     }));
+
+    const discourseUuids = Array.from(
+      new Set(
+        markedUpEpigraphicUnits
+          .map(unit => unit.discourseUuid)
+          .filter((discourseUuid): discourseUuid is string => !!discourseUuid)
+      )
+    );
+
+    const unitsByWord = discourseUuids.map(uuid =>
+      markedUpEpigraphicUnits.filter(unit => unit.discourseUuid === uuid)
+    );
+
+    return unitsByWord;
   }
 
   /**
@@ -228,13 +210,13 @@ export default class TabletRenderer {
 
   public columnsOnSide(side: EpigraphicUnitSide): number[] {
     return this.epigraphicUnits
-      .filter(unit => unit.epigType === 'column' && unit.side === side)
+      .filter(unit => unit.type === 'column' && unit.sideReading === side)
       .map(unit => unit.column!);
   }
 
   public linesInColumn(column: number, side: EpigraphicUnitSide): number[] {
     const unitsInColumn = this.epigraphicUnits.filter(
-      unit => unit.column === column && unit.side === side
+      unit => unit.column === column && unit.sideReading === side
     );
 
     const lines: number[] = Array.from(
@@ -243,46 +225,19 @@ export default class TabletRenderer {
     return lines;
   }
 
-  protected addMarkupToEpigraphicUnits(
-    epigUnits: EpigraphicUnit[]
-  ): EpigraphicUnitWithMarkup[] {
-    return epigUnits.map(unit => ({
-      uuid: unit.uuid,
-      type: unit.epigType === 'region' ? null : unit.type || 'phonogram',
-      epigType: unit.epigType,
-      reading:
-        unit.epigType === 'region'
-          ? unit.reading || ''
-          : this.markedUpEpigraphicReading(unit),
-      discourseUuid: unit.discourseUuid,
-      readingUuid: unit.readingUuid,
-      signUuid: unit.signUuid,
-      markups: unit.markups,
-      spellingUuid: unit.spellingUuid,
-      word: unit.word,
-      form: unit.form,
-      translation: unit.translation,
-      parseInfo: unit.parseInfo,
-      objOnTablet: unit.objOnTablet,
-    }));
-  }
-
   /**
    * Take a single epigraphic unit and return it with
    * its markups applied
    */
   protected markedUpEpigraphicReading(unit: EpigraphicUnit): string {
-    if (unit.markups) {
-      let markedUpReading = unit.reading;
-      unit.markups.forEach(markup => {
-        markedUpReading = this.applySingleMarkup(markup, markedUpReading || '');
-      });
-      return markedUpReading || '';
-    }
-    return unit.reading || '';
+    let markedUpReading = unit.reading;
+    unit.markup.forEach(m => {
+      markedUpReading = this.applySingleMarkup(m, markedUpReading || '');
+    });
+    return markedUpReading || '';
   }
 
-  protected applySingleMarkup(markup: MarkupUnit, reading: string): string {
+  protected applySingleMarkup(markup: TextMarkupRow, reading: string): string {
     let formattedReading = reading;
     switch (markup.type) {
       case 'isCollatedReading':
@@ -303,10 +258,10 @@ export default class TabletRenderer {
         }
         break;
       case 'undeterminedSigns':
-        if (markup.value) {
-          if (markup.value > 0) {
-            formattedReading = 'x'.repeat(markup.value);
-          } else if (markup.value === -1) {
+        if (markup.numValue) {
+          if (markup.numValue > 0) {
+            formattedReading = 'x'.repeat(markup.numValue);
+          } else if (markup.numValue === -1) {
             formattedReading = '...';
           }
         }
@@ -383,13 +338,13 @@ export default class TabletRenderer {
     }
   }
 
-  protected applyBracketMarkup(markup: MarkupUnit, reading: string): string {
+  protected applyBracketMarkup(markup: TextMarkupRow, reading: string): string {
     let formattedReading = this.addStartBracket(markup, reading);
     formattedReading = this.addEndBracket(markup, formattedReading);
     return formattedReading;
   }
 
-  protected addStartBracket(markup: MarkupUnit, reading: string): string {
+  protected addStartBracket(markup: TextMarkupRow, reading: string): string {
     const bracket = this.getStartBracket(markup.type);
 
     let formattedReading = reading;
@@ -423,7 +378,7 @@ export default class TabletRenderer {
     return formattedReading;
   }
 
-  protected addEndBracket(markup: MarkupUnit, reading: string): string {
+  protected addEndBracket(markup: TextMarkupRow, reading: string): string {
     const bracket = this.getEndBracket(markup.type);
 
     let formattedReading = reading;
@@ -459,20 +414,21 @@ export default class TabletRenderer {
     return formattedReading;
   }
 
-  private shouldAddStartBracket(markup: MarkupUnit): boolean {
+  private shouldAddStartBracket(markup: TextMarkupRow): boolean {
     return this.shouldAddBracket(markup, 'start');
   }
 
-  private shouldAddEndBracket(markup: MarkupUnit): boolean {
+  private shouldAddEndBracket(markup: TextMarkupRow): boolean {
     return this.shouldAddBracket(markup, 'end');
   }
 
-  private shouldAddBracket(markup: MarkupUnit, startOrEnd: 'start' | 'end') {
+  private shouldAddBracket(markup: TextMarkupRow, startOrEnd: 'start' | 'end') {
     const unit = this.getEpigraphicUnitByUuid(markup.referenceUuid);
 
     if (!unit) {
       return false;
     }
+
     const [tabletDiff, neighborChar]: [number, 'endChar' | 'startChar'] =
       startOrEnd === 'start' ? [-1, 'endChar'] : [1, 'startChar'];
 
@@ -482,7 +438,7 @@ export default class TabletRenderer {
         item.charOnTablet === unit.charOnTablet + tabletDiff
     );
 
-    if (!neighbor || !neighbor.markups) {
+    if (!neighbor || neighbor.markup.length === 0) {
       return true;
     }
 
@@ -491,7 +447,7 @@ export default class TabletRenderer {
     }
 
     if (unitMatchesDamageType(neighbor, markup.type)) {
-      const damageMarkup = getMarkupByDamageType(neighbor.markups, markup.type);
+      const damageMarkup = getMarkupByDamageType(neighbor.markup, markup.type);
       if (damageMarkup && damageMarkup[neighborChar] !== null) {
         return true;
       }
@@ -518,7 +474,7 @@ export default class TabletRenderer {
         transliterationString = `${transliterationString}\n${side.side!}\n`;
       }
 
-      const columns = this.columnsOnSide(side.side!);
+      const columns = this.columnsOnSide(side.sideReading!);
 
       columns.forEach(column => {
         if (columns.length > 1) {
@@ -527,7 +483,7 @@ export default class TabletRenderer {
           )}\n`;
         }
 
-        const lines = this.linesInColumn(column, side.side!);
+        const lines = this.linesInColumn(column, side.sideReading!);
 
         lines.forEach(line => {
           const lineReading = this.lineReading(line);

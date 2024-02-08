@@ -1,3 +1,6 @@
+/**
+ * This file contains internationalized text for the landing page.
+ */
 export default {
   en: {
     description:

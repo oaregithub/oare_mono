@@ -2,7 +2,7 @@ import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
 import { UpdateProfilePayload } from '@oare/types';
-import authenticatedRoute from '@/middlewares/authenticatedRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
 const router = express.Router();
 
@@ -18,6 +18,7 @@ router.route('/profile').patch(authenticatedRoute, async (req, res, next) => {
       firstName: updatedProfile.firstName || firstName,
       lastName: updatedProfile.lastName || lastName,
     });
+
     res.status(204).end();
   } catch (err) {
     next(new HttpInternalError(err as string));

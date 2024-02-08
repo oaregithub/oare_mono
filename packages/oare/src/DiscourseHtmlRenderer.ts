@@ -1,4 +1,8 @@
-import { DiscourseDisplayUnit, DiscourseUnit, LocaleCode } from '@oare/types';
+import {
+  DiscourseDisplayUnit,
+  TextDiscourseUnit,
+  LocaleCode,
+} from '@oare/types';
 import DiscourseRenderer, {
   displayUnitHelper,
   lineReadingHelperForWordsInTexts,
@@ -6,7 +10,7 @@ import DiscourseRenderer, {
 import { localizeString } from './tabletUtils';
 
 export default class DiscourseHtmlRenderer extends DiscourseRenderer {
-  constructor(discourseUnits: DiscourseUnit[], locale: LocaleCode) {
+  constructor(discourseUnits: TextDiscourseUnit[], locale: LocaleCode) {
     super(discourseUnits, locale);
     this.renderClass = DiscourseHtmlRenderer;
   }

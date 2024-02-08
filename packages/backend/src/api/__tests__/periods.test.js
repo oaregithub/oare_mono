@@ -3,32 +3,30 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const mockPermissionsDao = {
-  getUserPermissions: jest.fn().mockResolvedValue([
-    {
-      name: 'PERIODS',
-    },
-  ]),
-};
-
-const mockCache = {
-  retrieve: jest.fn().mockResolvedValue(null),
-  insert: jest.fn().mockImplementation((_key, response, _filter) => response),
-};
-
-const mockUserDao = {
-  getUserByUuid: jest.fn().mockResolvedValue({
-    uuid: 'user-uuid',
-  }),
-};
-
 describe('GET /periods', () => {
   const PATH = `${API_PATH}/periods`;
-  const mockRows = [];
-  const mockYears = [];
+
   const mockPeriodsDao = {
-    getPeriodRows: jest.fn().mockResolvedValue(mockRows),
-    getYears: jest.fn().mockResolvedValue(mockYears),
+    getPeriods: jest.fn().mockResolvedValue({}),
+  };
+
+  const mockPermissionsDao = {
+    getUserPermissions: jest.fn().mockResolvedValue([
+      {
+        name: 'PERIODS',
+      },
+    ]),
+  };
+
+  const mockCache = {
+    retrieve: jest.fn().mockResolvedValue(null),
+    insert: jest.fn().mockImplementation((_key, response, _filter) => response),
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({
+      uuid: 'user-uuid',
+    }),
   };
 
   const setup = () => {
@@ -50,14 +48,14 @@ describe('GET /periods', () => {
 
   it('returns 200 on successful period call', async () => {
     const response = await sendRequest();
-    expect(mockPeriodsDao.getPeriodRows).toHaveBeenCalled();
-    expect(mockPeriodsDao.getYears).toHaveBeenCalled();
+    expect(mockPeriodsDao.getPeriods).toHaveBeenCalled();
+    expect(response.status).toBe(200);
   });
 
   it('returns 500 on failed period call', async () => {
     sl.set('PeriodsDao', {
       ...mockPeriodsDao,
-      getPeriodRows: jest.fn().mockRejectedValue('failed period call'),
+      getPeriods: jest.fn().mockRejectedValue('failed period call'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

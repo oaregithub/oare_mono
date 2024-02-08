@@ -3,7 +3,7 @@ import {
   AddUsersToGroupPayload,
   RemoveUsersFromGroupPayload,
 } from '@oare/types';
-import adminRoute from '@/middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
 import sl from '@/serviceLocator';
 
@@ -13,14 +13,14 @@ router
   .route('/user_groups/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const { groupId }: { groupId: number } = req.params as any;
-
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
       const UserDao = sl.get('UserDao');
 
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
+      const groupId = Number(req.params.groupId);
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
         next(new HttpBadRequest(`Group with ID ${groupId} does not exist`));
         return;
       }
@@ -29,23 +29,34 @@ router
       const users = await Promise.all(
         userUuids.map(uuid => UserDao.getUserByUuid(uuid))
       );
-      res.json(users.filter(user => !!user));
+
+      res.json(users);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
   })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const { groupId }: { groupId: number } = req.params as any;
-      const { userUuids }: AddUsersToGroupPayload = req.body;
-
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
+      const UserDao = sl.get('UserDao');
+
+      const groupId = Number(req.params.groupId);
+      const { userUuids }: AddUsersToGroupPayload = req.body;
 
       // Make sure that the group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
         next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
+        return;
+      }
+
+      // Make sure the users exist
+      const usersExist = await Promise.all(
+        userUuids.map(uuid => UserDao.userExists(uuid))
+      );
+      if (usersExist.includes(false)) {
+        next(new HttpBadRequest('One or more users do not exist'));
         return;
       }
 
@@ -73,23 +84,33 @@ router
   })
   .delete(adminRoute, async (req, res, next) => {
     try {
-      const { groupId }: { groupId: number } = req.params as any;
-      const { userUuids }: RemoveUsersFromGroupPayload = req.query as any;
-
       const OareGroupDao = sl.get('OareGroupDao');
       const UserGroupDao = sl.get('UserGroupDao');
+      const UserDao = sl.get('UserDao');
+
+      const groupId = Number(req.params.groupId);
+      const { userUuids }: RemoveUsersFromGroupPayload = req.query as any;
 
       // Make sure that the group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(new HttpInternalError(`Group ID ${groupId} does not exist`));
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest(`Group ID ${groupId} does not exist`));
+        return;
+      }
+
+      // Make sure the users exist
+      const usersExist = await Promise.all(
+        userUuids.map(uuid => UserDao.userExists(uuid))
+      );
+      if (usersExist.includes(false)) {
+        next(new HttpBadRequest('One or more users do not exist'));
         return;
       }
 
       await Promise.all(
         userUuids.map(uuid => UserGroupDao.removeUserFromGroup(groupId, uuid))
       );
-      res.end();
+      res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

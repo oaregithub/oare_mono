@@ -1,26 +1,38 @@
 import express from 'express';
 import { HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
+import { Publication } from '@oare/types';
+import cacheMiddleware from '@/middlewares/router/cache';
+import { publicationsFilter } from '@/cache/filters';
 
 const router = express.Router();
 
-router.route('/publications').get(async (req, res, next) => {
-  try {
-    const userUuid = req.user ? req.user.uuid : null;
-    const PublicationDao = sl.get('PublicationDao');
+router
+  .route('/publications')
+  .get(
+    cacheMiddleware<Publication[]>(publicationsFilter),
+    async (req, res, next) => {
+      try {
+        const PublicationDao = sl.get('PublicationDao');
+        const cache = sl.get('cache');
 
-    const publicationPrefixes = await PublicationDao.getAllPublications();
+        const prefixes = await PublicationDao.getAllPublicationPrefixes();
 
-    const publications = await Promise.all(
-      publicationPrefixes.map(prefix =>
-        PublicationDao.getPublicationsByPrfx(prefix, userUuid)
-      )
-    );
+        const publications = await Promise.all(
+          prefixes.map(prefix => PublicationDao.getPublicationByPrefix(prefix))
+        );
 
-    res.json(publications);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+        const response = await cache.insert<Publication[]>(
+          { req },
+          publications,
+          publicationsFilter
+        );
+
+        res.json(response);
+      } catch (err) {
+        next(new HttpInternalError(err as string));
+      }
+    }
+  );
 
 export default router;

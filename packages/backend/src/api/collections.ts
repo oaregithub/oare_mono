@@ -1,9 +1,9 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
-import collectionsMiddleware from '@/middlewares/collections';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
+import collectionsMiddleware from '@/middlewares/router/collections';
 import sl from '@/serviceLocator';
-import cacheMiddleware from '@/middlewares/cache';
-import { CollectionResponse, Collection } from '@oare/types';
+import cacheMiddleware from '@/middlewares/router/cache';
+import { Collection, CollectionRow } from '@oare/types';
 import { collectionTextsFilter, collectionFilter } from '@/cache/filters';
 
 const router = express.Router();
@@ -11,24 +11,23 @@ const router = express.Router();
 router
   .route('/collections')
   .get(
-    cacheMiddleware<Collection[]>(collectionFilter),
+    cacheMiddleware<CollectionRow[]>(collectionFilter),
     async (req, res, next) => {
       try {
         const CollectionDao = sl.get('CollectionDao');
         const cache = sl.get('cache');
 
-        const collectionUuids = await CollectionDao.getAllCollections();
-        const collections = (
-          await Promise.all(
-            collectionUuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-          )
-        )
-          .filter(collection => collection)
-          .map(collection => collection!);
+        const collectionUuids = await CollectionDao.getAllCollectionUuids();
 
-        const response = await cache.insert<Collection[]>(
+        const collectionRows = await Promise.all(
+          collectionUuids.map(uuid =>
+            CollectionDao.getCollectionRowByUuid(uuid)
+          )
+        );
+
+        const response = await cache.insert<CollectionRow[]>(
           { req },
-          collections,
+          collectionRows,
           collectionFilter
         );
 
@@ -40,22 +39,28 @@ router
   );
 
 router
-  .route('/collections/:uuid')
+  .route('/collection/:uuid')
   .get(
     collectionsMiddleware,
-    cacheMiddleware<CollectionResponse>(collectionTextsFilter),
+    cacheMiddleware<Collection>(collectionTextsFilter),
     async (req, res, next) => {
       try {
-        const uuid = req.params.uuid as string;
-
         const cache = sl.get('cache');
-        const HierarchyDao = sl.get('HierarchyDao');
+        const CollectionDao = sl.get('CollectionDao');
 
-        const texts = await HierarchyDao.getCollectionTexts(uuid);
+        const { uuid } = req.params;
 
-        const response = await cache.insert<CollectionResponse>(
+        const collectionExists = await CollectionDao.collectionExists(uuid);
+        if (!collectionExists) {
+          next(new HttpBadRequest('Collection does not exist'));
+          return;
+        }
+
+        const collection = await CollectionDao.getCollectionByUuid(uuid);
+
+        const response = await cache.insert<Collection>(
           { req },
-          texts,
+          collection,
           collectionTextsFilter
         );
 
@@ -65,22 +70,5 @@ router
       }
     }
   );
-
-router
-  .route('/collection_hierarchy/:collectionUuid')
-  .get(async (req, res, next) => {
-    try {
-      const HierarchyDao = sl.get('HierarchyDao');
-      const { collectionUuid } = req.params;
-
-      const parentUuid = await HierarchyDao.getParentUuidByCollection(
-        collectionUuid
-      );
-
-      res.json(parentUuid);
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
 
 export default router;

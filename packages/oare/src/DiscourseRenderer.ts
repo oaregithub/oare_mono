@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
 import {
-  DiscourseUnit,
+  TextDiscourseUnit,
   DiscourseDisplayUnit,
   LocaleCode,
   DiscourseUnitType,
@@ -9,13 +9,13 @@ import {
 import { localizeString } from './tabletUtils';
 
 export default class DiscourseRenderer {
-  protected discourseUnits: DiscourseUnit[];
+  protected discourseUnits: TextDiscourseUnit[];
 
   protected locale: LocaleCode;
 
   protected renderClass: typeof DiscourseRenderer;
 
-  constructor(discourseUnits: DiscourseUnit[], locale: LocaleCode) {
+  constructor(discourseUnits: TextDiscourseUnit[], locale: LocaleCode) {
     this.discourseUnits = discourseUnits;
     this.discourseUnits.sort((a, b) => a.objInText - b.objInText);
     this.locale = locale;
@@ -53,25 +53,25 @@ export default class DiscourseRenderer {
   }
 }
 
-function getSides(units: DiscourseUnit[]): number[] {
+function getSides(units: TextDiscourseUnit[]): number[] {
   const sides: Set<number> = new Set();
   units.forEach(unit => {
-    if (unit.side) {
-      sides.add(unit.side);
+    if (unit.epigraphies[0].side) {
+      sides.add(unit.epigraphies[0].side);
     }
-    const childrenSides = getSides(unit.units);
+    const childrenSides = getSides(unit.children);
     childrenSides.forEach(side => sides.add(side));
   });
   return Array.from(sides);
 }
 
-function getSideLines(side: number, units: DiscourseUnit[]): number[] {
+function getSideLines(side: number, units: TextDiscourseUnit[]): number[] {
   const lines: Set<number> = new Set();
   units.forEach(unit => {
-    if (unit.line && unit.side === side) {
-      lines.add(unit.line);
+    if (unit.epigraphies[0].line && unit.epigraphies[0].side === side) {
+      lines.add(unit.epigraphies[0].line);
     }
-    const childrenLines = getSideLines(side, unit.units);
+    const childrenLines = getSideLines(side, unit.children);
     childrenLines.forEach(line => lines.add(line));
   });
   return Array.from(lines);
@@ -79,14 +79,14 @@ function getSideLines(side: number, units: DiscourseUnit[]): number[] {
 
 function getLineTypes(
   line: number,
-  units: DiscourseUnit[]
+  units: TextDiscourseUnit[]
 ): DiscourseUnitType[] {
   const types: Set<DiscourseUnitType> = new Set();
   units.forEach(unit => {
-    if (unit.line === line) {
+    if (unit.epigraphies[0].line === line) {
       types.add(unit.type);
     }
-    const childrenTypes = getLineTypes(line, unit.units);
+    const childrenTypes = getLineTypes(line, unit.children);
     childrenTypes.forEach(type => types.add(type));
   });
   return Array.from(types);
@@ -100,7 +100,7 @@ interface RenderFormat {
   spelling: RenderFunc;
 }
 export function displayUnitHelper(
-  units: DiscourseUnit[],
+  units: TextDiscourseUnit[],
   line: number,
   words: DiscourseDisplayUnit[],
   renderFormatter: RenderFormat = {
@@ -109,7 +109,7 @@ export function displayUnitHelper(
   }
 ) {
   units.forEach(unit => {
-    if (unit.line === line) {
+    if (unit.epigraphies[0].line === line) {
       if (unit.transcription) {
         words.push({
           uuid: unit.uuid,
@@ -124,12 +124,12 @@ export function displayUnitHelper(
         });
       }
     }
-    displayUnitHelper(unit.units, line, words, renderFormatter);
+    displayUnitHelper(unit.children, line, words, renderFormatter);
   });
 }
 
 export function lineReadingHelperForWordsInTexts(
-  units: DiscourseUnit[],
+  units: TextDiscourseUnit[],
   discourseUuids: string[],
   line: number,
   words: string[],
@@ -139,7 +139,7 @@ export function lineReadingHelperForWordsInTexts(
   }
 ) {
   units.forEach(unit => {
-    if (unit.line === line) {
+    if (unit.epigraphies[0].line === line) {
       if (unit.transcription) {
         words.push(
           renderFormatter.transliteration(
@@ -159,7 +159,7 @@ export function lineReadingHelperForWordsInTexts(
       }
     }
     lineReadingHelperForWordsInTexts(
-      unit.units,
+      unit.children,
       discourseUuids,
       line,
       words,

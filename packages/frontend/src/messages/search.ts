@@ -1,3 +1,6 @@
+/**
+ * This file contains internationalized text for the search features.
+ */
 export default {
   en: {
     searchTexts: 'Search Texts',

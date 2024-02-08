@@ -1,6 +1,10 @@
 import firebase from 'firebase/app';
 import 'firebase/auth';
 
+/**
+ * Firebase configuration.
+ * It is okay to expose this configuration, as it is not sensitive.
+ */
 const firebaseConfig = {
   apiKey: 'AIzaSyDpIFs9456JIobouGi7sDz0MROnHR8Oja0',
   authDomain: 'oareauth.firebaseapp.com',
@@ -11,6 +15,10 @@ const firebaseConfig = {
   measurementId: 'G-59Z6RJEKYC',
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
+/**
+ * Initialized Firebase instance.
+ */
 export default firebase;

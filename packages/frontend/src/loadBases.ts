@@ -2,6 +2,10 @@ import Vue from 'vue';
 import upperFirst from 'lodash/upperFirst';
 import camelCase from 'lodash/camelCase';
 
+/**
+ * Loads all base OARE Components.
+ * This allows us to use them in the app without having to import them in every file.
+ */
 export default function () {
   const requireComponent = require.context(
     '@/components/base',

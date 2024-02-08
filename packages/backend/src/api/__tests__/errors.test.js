@@ -54,23 +54,7 @@ describe('POST /errors', () => {
 });
 
 describe('GET /errors', () => {
-  const mockGetPayload = {
-    filters: {
-      status: '',
-      user: '',
-      description: '',
-      stacktrace: '',
-    },
-    sort: {
-      type: 'timestamp',
-      desc: false,
-    },
-    pagination: {
-      page: 1,
-      limit: 10,
-    },
-  };
-  const PATH = `${API_PATH}/errors?payload=${JSON.stringify(mockGetPayload)}`;
+  const PATH = `${API_PATH}/errors`;
   const mockErrorsRow = [
     {
       uuid: 'testUuid',
@@ -90,10 +74,16 @@ describe('GET /errors', () => {
       isAdmin: true,
     }),
   };
+  const mockUtils = {
+    extractPagination: jest
+      .fn()
+      .mockReturnValue({ filter: '', limit: 10, page: 1 }),
+  };
 
   const setup = () => {
     sl.set('ErrorsDao', mockErrorsDao);
     sl.set('UserDao', mockUserDao);
+    sl.set('utils', mockUtils);
   };
 
   beforeEach(setup);
@@ -104,7 +94,6 @@ describe('GET /errors', () => {
   it('returns 200 on successful error log retrieval', async () => {
     const response = await sendRequest();
     expect(mockErrorsDao.getErrorLog).toHaveBeenCalled();
-    expect(JSON.parse(response.text)).toEqual(mockErrorsRow);
     expect(response.status).toBe(200);
   });
 

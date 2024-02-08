@@ -1,40 +1,24 @@
-export interface FieldInfo {
-  uuid: string | null;
-  referenceUuid: string | null;
-  field: string | null;
-  primacy: number | null;
-  language: string | null;
-  type: string | null;
-}
+// COMPLETE
 
-export interface NewFieldPayload {
-  referenceUuid: string;
-  description: string;
+export interface FieldPayload {
+  field: string;
   primacy: number;
-  location?: 'taxonomyTree' | 'archive';
-}
-
-export interface EditFieldPayload {
-  uuid: string;
-  description: string;
-  primacy: number;
-  location?: 'taxonomyTree' | 'archive';
-}
-
-export interface DeleteFieldPayload {
-  uuid: string;
-  referenceUuid: string;
-  primacy: number;
-  location?: 'taxonomyTree' | 'archive';
-  type: string;
+  type: FieldType;
 }
 
 export interface FieldRow {
-  id: number;
   uuid: string;
-  reference_uuid: string;
-  type: string | null;
+  referenceUuid: string;
+  type: FieldType | null;
   language: string | null;
-  primary: number | null;
-  field: string | null;
+  primacy: number | null;
+  field: string;
+  sourceUuid: string | null;
 }
+
+export type FieldType =
+  | 'definition'
+  | 'discussionLemma'
+  | 'description'
+  | 'translation'
+  | 'note';

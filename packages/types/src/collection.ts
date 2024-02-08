@@ -1,25 +1,14 @@
-export interface Collection {
-  uuid: string;
-  name: string;
+import { HierarchyRow } from './hierarchy';
+import { Text } from './text';
+
+// COMPLETE
+
+export interface Collection extends CollectionRow {
+  hierarchy: HierarchyRow;
+  texts: Text[];
 }
 
-export interface CollectionText {
-  id: number;
+export interface CollectionRow {
   uuid: string;
-  type: string;
-  hasEpigraphy: boolean;
-  name: string;
-  excavationPrefix: string;
-  excavationNumber: string;
-  museumPrefix: string;
-  museumNumber: string;
-  publicationPrefix: string;
-  publicationNumber: string;
-}
-export interface CollectionResponse {
-  texts: CollectionText[];
-}
-
-export interface CollectionInfo {
   name: string;
 }

@@ -3,28 +3,9 @@ import { API_PATH } from '@/setupRoutes';
 import request from 'supertest';
 import sl from '@/serviceLocator';
 
-const mockGETCollectionTexts = {
-  totalTexts: 2,
-  texts: [
-    {
-      id: 'id1',
-      uuid: 'uuid1',
-      name: 'name1',
-      hasEpigraphy: true,
-      type: 'type1',
-    },
-    {
-      id: 'id2',
-      uuid: 'uuid2',
-      name: 'name2',
-      hasEpigraphy: true,
-      type: 'type2',
-    },
-  ],
-};
-
 describe('GET /collections', () => {
   const PATH = `${API_PATH}/collections`;
+
   const collectionUuid = 'collection-uuid';
   const collection = {
     uuid: collectionUuid,
@@ -32,8 +13,8 @@ describe('GET /collections', () => {
   };
 
   const mockCollectionDao = {
-    getAllCollections: jest.fn().mockResolvedValue([collectionUuid]),
-    getCollectionByUuid: jest.fn().mockResolvedValue(collection),
+    getAllCollectionUuids: jest.fn().mockResolvedValue([collectionUuid]),
+    getCollectionRowByUuid: jest.fn().mockResolvedValue(collection),
   };
 
   const mockCache = {
@@ -58,14 +39,15 @@ describe('GET /collections', () => {
 
   it('returns 200 on successful collections retrieval', async () => {
     const response = await sendRequest();
-    expect(mockCollectionDao.getAllCollections).toHaveBeenCalled();
+    expect(mockCollectionDao.getAllCollectionUuids).toHaveBeenCalled();
+    expect(mockCollectionDao.getCollectionRowByUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
   it('returns 500 on failed collections retrieval', async () => {
     sl.set('CollectionDao', {
       ...mockCollectionDao,
-      getAllCollections: jest
+      getAllCollectionUuids: jest
         .fn()
         .mockRejectedValue('failed collections retrieval'),
     });
@@ -76,7 +58,7 @@ describe('GET /collections', () => {
   it('returns 500 on failed collection retrieval by uuid', async () => {
     sl.set('CollectionDao', {
       ...mockCollectionDao,
-      getCollectionByUuid: jest
+      getCollectionRowByUuid: jest
         .fn()
         .mockRejectedValue('failed to get collection'),
     });
@@ -85,22 +67,17 @@ describe('GET /collections', () => {
   });
 });
 
-describe('GET /collections/:uuid', () => {
+describe('GET /collection/:uuid', () => {
   const uuid = 'mockUuid';
-  const PATH = `${API_PATH}/collections/${uuid}`;
+  const PATH = `${API_PATH}/collection/${uuid}`;
 
   const mockCollectionTextUtils = {
     canViewCollection: jest.fn().mockResolvedValue(true),
   };
 
-  const mockHierarchyDao = {
-    getCollectionTexts: jest.fn().mockResolvedValue(mockGETCollectionTexts),
-  };
-
-  const mockUtils = {
-    extractPagination: jest
-      .fn()
-      .mockReturnValue({ filter: '', limit: 10, page: 1 }),
+  const mockCollectionDao = {
+    collectionExists: jest.fn().mockResolvedValue(true),
+    getCollectionByUuid: jest.fn().mockResolvedValue({}),
   };
 
   const mockCache = {
@@ -110,8 +87,7 @@ describe('GET /collections/:uuid', () => {
 
   const setup = () => {
     sl.set('CollectionTextUtils', mockCollectionTextUtils);
-    sl.set('HierarchyDao', mockHierarchyDao);
-    sl.set('utils', mockUtils);
+    sl.set('CollectionDao', mockCollectionDao);
     sl.set('cache', mockCache);
   };
 
@@ -122,15 +98,15 @@ describe('GET /collections/:uuid', () => {
 
   it('returns 200 on successful collection text retrieval', async () => {
     const response = await sendRequest();
-    expect(mockHierarchyDao.getCollectionTexts).toHaveBeenCalled();
+    expect(mockCollectionDao.getCollectionByUuid).toHaveBeenCalled();
     expect(response.status).toBe(200);
   });
 
   it('returns 500 on failed collection texts retrieval', async () => {
-    sl.set('HierarchyDao', {
-      getCollectionTexts: jest
+    sl.set('CollectionDao', {
+      getCollectionByUuid: jest
         .fn()
-        .mockRejectedValue('failed collection texts retrieval'),
+        .mockRejectedValue('failed collection retrieval'),
     });
     const response = await sendRequest();
     expect(response.status).toBe(500);

@@ -1,16 +1,8 @@
-export interface PublicationResponse {
-  prefix: string;
-  textNumbers: PublicationText[];
-}
+import { Text } from './text';
 
-export interface PublicationText {
-  textUuid: string;
-  type: string;
-  name: string;
-  excavationPrefix: string;
-  excavationNumber: string;
-  museumPrefix: string;
-  museumNumber: string;
-  publicationPrefix: string;
-  publicationNumber: string;
+// COMPLETE
+
+export interface Publication {
+  prefix: string;
+  texts: Text[];
 }

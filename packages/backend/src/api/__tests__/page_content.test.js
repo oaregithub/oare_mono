@@ -14,7 +14,6 @@ describe('GET /page_content/:routeName', () => {
   const mockCache = {
     retrieve: jest.fn().mockResolvedValue(null),
     insert: jest.fn(),
-    clear: jest.fn(),
   };
 
   const setup = () => {
@@ -45,23 +44,28 @@ describe('GET /page_content/:routeName', () => {
 describe('PATCH /page_content/:routeName', () => {
   const routeName = 'test-route';
   const PATH = `${API_PATH}/page_content/${routeName}`;
-  const mockContent = { newContent: 'test-content' };
+  const mockBody = { newContent: 'test-content' };
 
   const mockPageContentDao = {
-    editContent: jest.fn().mockResolvedValue({}),
+    editContent: jest.fn().mockResolvedValue(),
+  };
+
+  const mockUserDao = {
+    getUserByUuid: jest.fn().mockResolvedValue({ isAdmin: true }),
+  };
+
+  const mockCache = {
+    clear: jest.fn(),
   };
 
   const setup = () => {
     sl.set('PageContentDao', mockPageContentDao);
-    sl.set('UserDao', {
-      getUserByUuid: jest.fn().mockResolvedValue({
-        isAdmin: true,
-      }),
-    });
+    sl.set('UserDao', mockUserDao);
+    sl.set('cache', mockCache);
   };
 
   const sendRequest = () =>
-    request(app).patch(PATH).send(mockContent).set('Authorization', 'token');
+    request(app).patch(PATH).send(mockBody).set('Authorization', 'token');
 
   beforeEach(setup);
 

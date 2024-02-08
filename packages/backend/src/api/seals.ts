@@ -1,16 +1,15 @@
 import express from 'express';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import sl from '@/serviceLocator';
-import cacheMiddleware from '@/middlewares/cache';
+import cacheMiddleware from '@/middlewares/router/cache';
 import {
-  SealNameUuid,
-  SealInfo,
   Seal,
-  InsertItemPropertyRow,
-  AddSealLinkPayload,
+  ItemPropertyRow,
+  SealCore,
+  ConnectSealImpressionPayload,
 } from '@oare/types';
-import { SealFilter, SealListFilter } from '@/cache/filters';
-import permissionsRoute from '@/middlewares/permissionsRoute';
+import { sealFilter, sealListFilter } from '@/cache/filters';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { v4 } from 'uuid';
 
 const router = express.Router();
@@ -19,25 +18,22 @@ router
   .route('/seals')
   .get(
     permissionsRoute('SEALS'),
-    cacheMiddleware<SealInfo[]>(SealListFilter),
+    cacheMiddleware<SealCore[]>(sealListFilter),
     async (req, res, next) => {
       try {
-        const SealDao = sl.get('SealDao');
+        const SpatialUnitDao = sl.get('SpatialUnitDao');
         const cache = sl.get('cache');
 
-        const sealsNameAndUuid: SealNameUuid[] = await SealDao.getSeals();
-        const seals: SealInfo[] = await Promise.all(
-          sealsNameAndUuid.map(async s => ({
-            ...s,
-            imageLinks: await SealDao.getImagesBySealUuid(s.uuid),
-            count: 0,
-          }))
+        const sealUuids = await SpatialUnitDao.getAllSealUuids();
+
+        const seals = await Promise.all(
+          sealUuids.map(uuid => SpatialUnitDao.getSealCoreByUuid(uuid))
         );
 
-        const response = await cache.insert<SealInfo[]>(
+        const response = await cache.insert<SealCore[]>(
           { req },
           seals,
-          SealListFilter
+          sealListFilter
         );
 
         res.json(response);
@@ -51,24 +47,23 @@ router
   .route('/seals/:uuid')
   .get(
     permissionsRoute('SEALS'),
-    cacheMiddleware<Seal>(SealFilter),
+    cacheMiddleware<Seal>(sealFilter),
     async (req, res, next) => {
       try {
-        const uuid = req.params.uuid as string;
-        const SealDao = sl.get('SealDao');
+        const SpatialUnitDao = sl.get('SpatialUnitDao');
         const cache = sl.get('cache');
 
-        const nameAndUuid: SealNameUuid = await SealDao.getSealByUuid(uuid);
+        const { uuid } = req.params;
 
-        const seal: Seal = {
-          ...nameAndUuid,
-          imageLinks: await SealDao.getImagesBySealUuid(uuid),
-          count: 0,
-          sealProperties: await SealDao.getSealProperties(uuid),
-          sealImpressions: [],
-        };
+        const sealExists = await SpatialUnitDao.spatialUnitExists(uuid);
+        if (!sealExists) {
+          next(new HttpBadRequest('Seal does not exist'));
+          return;
+        }
 
-        const response = await cache.insert<Seal>({ req }, seal, SealFilter);
+        const seal = await SpatialUnitDao.getSealByUuid(uuid);
+
+        const response = await cache.insert<Seal>({ req }, seal, sealFilter);
 
         res.json(response);
       } catch (err) {
@@ -78,7 +73,7 @@ router
   )
   .patch(permissionsRoute('EDIT_SEAL'), async (req, res, next) => {
     try {
-      const SealDao = sl.get('SealDao');
+      const AliasDao = sl.get('AliasDao');
       const cache = sl.get('cache');
       const utils = sl.get('utils');
 
@@ -86,11 +81,12 @@ router
       const { name } = req.body;
 
       await utils.createTransaction(async trx => {
-        await SealDao.updateSealSpelling(uuid, name, trx);
+        await AliasDao.updateName(uuid, name, 1, trx);
       });
 
-      await cache.clear('/seals', { level: 'exact' }, req);
-      await cache.clear(`/seals/${uuid}`, { level: 'exact' }, req);
+      await cache.clear('/seals', { level: 'exact' });
+      await cache.clear(`/seals/${uuid}`, { level: 'exact' });
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -98,20 +94,30 @@ router
   });
 
 router
-  .route('/connect/seal_impression')
-  .post(permissionsRoute('ADD_SEAL_LINK'), async (req, res, next) => {
+  .route('/seal_impression')
+  .patch(permissionsRoute('ADD_SEAL_LINK'), async (req, res, next) => {
     try {
-      const SealDao = sl.get('SealDao');
       const ItemPropertiesDao = sl.get('ItemPropertiesDao');
       const cache = sl.get('cache');
       const utils = sl.get('utils');
-      const { sealUuid, textEpigraphyUuid } = req.body as AddSealLinkPayload;
 
-      const parentUuid: string = await SealDao.getSealLinkParentUuid(
+      const {
+        sealUuid,
+        textEpigraphyUuid,
+      } = req.body as ConnectSealImpressionPayload;
+
+      const itemProperties = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
         textEpigraphyUuid
       );
 
-      const itemProperty: InsertItemPropertyRow = {
+      const relevantProperties = itemProperties.filter(
+        prop => prop.valueUuid === 'ec820e17-ecc7-492f-86a7-a01b379622e1'
+      );
+
+      const parentUuid =
+        relevantProperties.length > 0 ? relevantProperties[0].uuid : null;
+
+      const itemProperty: ItemPropertyRow = {
         uuid: v4(),
         referenceUuid: textEpigraphyUuid,
         objectUuid: sealUuid,
@@ -123,12 +129,39 @@ router
       };
 
       await utils.createTransaction(async trx => {
-        await ItemPropertiesDao.addProperties([itemProperty], trx);
+        await ItemPropertiesDao.insertItemPropertyRows([itemProperty], trx);
       });
 
-      await cache.clear('/seals', { level: 'exact' }, req);
-      await cache.clear(`/seals/${sealUuid}`, { level: 'exact' }, req);
+      await cache.clear('/seals', { level: 'exact' });
+      await cache.clear(`/seals/${sealUuid}`, { level: 'exact' });
+
       res.status(201).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
+    }
+  });
+
+router
+  .route('/seal_impression/:uuid')
+  .get(permissionsRoute('ADD_SEAL_LINK'), async (req, res, next) => {
+    try {
+      const ItemPropertiesDao = sl.get('ItemPropertiesDao');
+
+      const { uuid } = req.params;
+
+      const itemProperties = await ItemPropertiesDao.getItemPropertiesByReferenceUuid(
+        uuid
+      );
+
+      const relevantProperties = itemProperties.filter(
+        prop =>
+          prop.variableUuid === 'f32e6903-67c9-41d8-840a-d933b8b3e719' &&
+          prop.objectUuid !== null
+      );
+
+      const sealImpressionProperty = relevantProperties[0] || null;
+
+      res.json(sealImpressionProperty);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }

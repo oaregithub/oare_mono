@@ -1,15 +1,18 @@
-import { Collection } from './collection';
+// COMPLETE
 
-export interface Group {
+export interface GroupRow {
   id: number;
   name: string;
-  created_on: Date;
-  num_users: number;
+  createdOn: Date;
   description: string | null;
 }
 
+export interface Group extends GroupRow {
+  numUsers: number;
+}
+
 export interface CreateGroupPayload {
-  groupName: string;
+  name: string;
   description: string;
 }
 

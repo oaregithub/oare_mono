@@ -4,15 +4,18 @@ import { RegisterPayload, RegisterResponse } from '@oare/types';
 import * as security from '@/security';
 import firebase from '@/firebase';
 import { HttpInternalError, HttpBadRequest } from '@/exceptions';
-import UserDao from './daos/UserDao';
+import sl from '@/serviceLocator';
 
 const router = express.Router();
 
 router.route('/register').post(async (req, res, next) => {
   try {
+    const UserDao = sl.get('UserDao');
+
     const { firstName, lastName, email, password }: RegisterPayload = req.body;
-    const existingUser = await UserDao.emailExists(email);
-    if (existingUser) {
+
+    const emailExists = await UserDao.emailExists(email);
+    if (emailExists) {
       next(
         new HttpBadRequest(
           `The email ${email} is already in use, please choose another.`
@@ -22,6 +25,7 @@ router.route('/register').post(async (req, res, next) => {
     }
 
     const uuid = v4();
+
     await firebase.auth().createUser({
       uid: uuid,
       email,
@@ -29,26 +33,22 @@ router.route('/register').post(async (req, res, next) => {
       displayName: `${firstName} ${lastName}`,
     });
 
-    await UserDao.createUser({
-      uuid,
-      firstName,
-      lastName,
-      email,
-      isAdmin: false,
-    });
-    const user = await UserDao.getUserByEmail(email);
+    await UserDao.createUser(uuid, firstName, lastName, email);
 
-    if (!user) {
+    const userExists = await UserDao.userExists(uuid);
+    if (!userExists) {
       next(new HttpInternalError('Error creating user'));
       return;
     }
+
+    const user = await UserDao.getUserByUuid(uuid);
     req.user = user;
 
-    const firebaseToken = await security.getFirebaseToken(user.uuid);
+    const token = await security.getFirebaseToken(user.uuid);
 
     const response: RegisterResponse = {
       user,
-      firebaseToken,
+      token,
     };
 
     res.status(201).json(response);

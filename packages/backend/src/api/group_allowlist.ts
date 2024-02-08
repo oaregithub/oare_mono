@@ -1,145 +1,102 @@
 import express from 'express';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
-import adminRoute from '@/middlewares/adminRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 import sl from '@/serviceLocator';
-import {
-  DenylistAllowlistPayload,
-  GetDenylistAllowlistParameters,
-  DeleteDenylistAllowlistParameters,
-  DenylistAllowlistItem,
-} from '@oare/types';
+import { AddDenylistAllowlistPayload, DenylistAllowlist } from '@oare/types';
 
 const router = express.Router();
 
 router
-  .route('/group_allowlist/:groupId/:type')
+  .route('/group_allowlist/:groupId')
   .get(adminRoute, async (req, res, next) => {
     try {
-      const TextEpigraphyDao = sl.get('TextEpigraphyDao');
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const TextDao = sl.get('TextDao');
-      const CollectionDao = sl.get('CollectionDao');
       const ResourceDao = sl.get('ResourceDao');
-      const {
-        groupId,
-        type,
-      } = (req.params as unknown) as GetDenylistAllowlistParameters;
+      const OareGroupDao = sl.get('OareGroupDao');
 
-      const groupAllowlist = await GroupAllowlistDao.getGroupAllowlist(
+      const groupId = Number(req.params.groupId);
+
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
+        return;
+      }
+
+      const allowlistTexts = await GroupAllowlistDao.getGroupAllowlist(
         groupId,
-        type
+        'text'
       );
-      let names: (string | undefined)[];
-      let urls: (string | undefined)[];
-      if (type === 'text') {
-        const results = await Promise.all(
-          groupAllowlist.map(uuid => TextDao.getTextByUuid(uuid))
-        );
-        names = results.map(row => (row ? row.name : undefined));
-      } else if (type === 'collection') {
-        const results = await Promise.all(
-          groupAllowlist.map(uuid => CollectionDao.getCollectionByUuid(uuid))
-        );
-        names = results.map(row => (row ? row.name : undefined));
-      } else {
-        const results = await Promise.all(
-          groupAllowlist.map(uuid =>
-            ResourceDao.getAllowListImageWithText(uuid)
-          )
-        );
-        names = results.map(row => (row ? row.label : undefined));
-        urls = results.map(row => (row ? row.link : undefined));
-      }
+      const allowlistImages = await GroupAllowlistDao.getGroupAllowlist(
+        groupId,
+        'img'
+      );
 
-      let response: DenylistAllowlistItem[];
-      if (type === 'text' || type === 'collection') {
-        const epigraphyStatus = await Promise.all(
-          groupAllowlist.map(uuid => TextEpigraphyDao.hasEpigraphy(uuid))
-        );
-        response = groupAllowlist.map((uuid, index) => ({
-          uuid,
-          name: names[index],
-          hasEpigraphy: epigraphyStatus[index],
-        }));
-      } else {
-        response = groupAllowlist.map((uuid, index) => ({
-          uuid,
-          name: names[index],
-          url: urls[index],
-        }));
-      }
+      const texts = await Promise.all(
+        allowlistTexts.map(uuid => TextDao.getTextByUuid(uuid))
+      );
+
+      const images = await Promise.all(
+        allowlistImages.map(uuid => ResourceDao.getS3ImageByUuid(uuid))
+      );
+
+      const response: DenylistAllowlist = {
+        texts,
+        images,
+      };
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
-  });
-
-router
-  .route('/group_allowlist/:groupId')
+  })
   .post(adminRoute, async (req, res, next) => {
     try {
-      const { groupId } = (req.params as unknown) as {
-        groupId: number;
-      };
-      const { uuids, type }: DenylistAllowlistPayload = req.body;
-
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const OareGroupDao = sl.get('OareGroupDao');
       const TextDao = sl.get('TextDao');
-      const CollectionDao = sl.get('CollectionDao');
       const ResourceDao = sl.get('ResourceDao');
 
+      const groupId = Number(req.params.groupId);
+      const { uuids, type }: AddDenylistAllowlistPayload = req.body;
+
       // Make sure that group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
         return;
       }
 
-      // If texts, make sure all text UUIDs exist
+      // Make sure all UUIDs exist
       if (type === 'text') {
-        const texts = await Promise.all(
-          uuids.map(uuid => TextDao.getTextByUuid(uuid))
+        const textsExist = await Promise.all(
+          uuids.map(uuid => TextDao.textExists(uuid))
         );
-        if (texts.some(text => !text)) {
+        if (textsExist.includes(false)) {
           next(
-            new HttpBadRequest('One or more of given text UUIDs does not exist')
+            new HttpBadRequest('One or more of the provided texts do not exist')
           );
           return;
         }
-      }
-
-      // If collections, make sure all collection UUIDs exist
-      if (type === 'collection') {
-        const collections = await Promise.all(
-          uuids.map(uuid => CollectionDao.getCollectionByUuid(uuid))
+      } else if (type === 'img') {
+        const imagesExist = await Promise.all(
+          uuids.map(uuid => ResourceDao.resourceExists(uuid))
         );
-        if (collections.some(collection => !collection)) {
+        if (imagesExist.includes(false)) {
           next(
             new HttpBadRequest(
-              'One or more of given collection UUIDs does not exist'
+              'One or more of the provided images do not exist'
             )
           );
           return;
         }
-      }
-
-      // If images, make sure all images UUIDs exist
-      if (type === 'img') {
-        const images = await Promise.all(
-          uuids.map(uuid => ResourceDao.getImageByUuid(uuid))
-        );
-        if (images.some(image => !image)) {
-          next(
-            new HttpBadRequest(
-              'One or more of given image UUIDs does not exist'
-            )
-          );
-          return;
-        }
+      } else {
+        next(new HttpBadRequest('Invalid type'));
+        return;
       }
 
       await GroupAllowlistDao.addItemsToAllowlist(groupId, uuids, type);
+
       res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
@@ -152,15 +109,14 @@ router
     try {
       const GroupAllowlistDao = sl.get('GroupAllowlistDao');
       const OareGroupDao = sl.get('OareGroupDao');
-      const {
-        groupId,
-        uuid,
-      } = (req.params as unknown) as DeleteDenylistAllowlistParameters;
 
-      // Make sure group ID exists
-      const existingGroup = await OareGroupDao.getGroupById(groupId);
-      if (!existingGroup) {
-        next(new HttpBadRequest(`Group ID does not exist: ${groupId}`));
+      const groupId = Number(req.params.groupId);
+      const { uuid } = req.params;
+
+      // Make sure that group ID exists
+      const groupExists = await OareGroupDao.groupExists(groupId);
+      if (!groupExists) {
+        next(new HttpBadRequest('Group does not exist'));
         return;
       }
 
@@ -170,11 +126,12 @@ router
         groupId
       );
       if (!associationExists) {
-        next(new HttpBadRequest(`Cannot remove item not in group ${uuid}`));
+        next(new HttpBadRequest(`Cannot remove item not in group: ${uuid}`));
         return;
       }
 
       await GroupAllowlistDao.removeItemFromAllowlist(groupId, uuid);
+
       res.status(204).end();
     } catch (err) {
       next(new HttpInternalError(err as string));

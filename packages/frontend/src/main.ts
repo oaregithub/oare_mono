@@ -18,14 +18,17 @@ import i18n from './i18n';
 import firebase from './firebase';
 import 'vue-inner-image-zoom/lib/vue-inner-image-zoom.css';
 
-sl.set('serverProxy', server);
+// Instantiates all the singletons and sets them in the service locator at runtime. Should be set alphabetically.
 sl.set('globalActions', globalActions);
-sl.set('store', store);
 sl.set('lodash', _);
 sl.set('router', router);
+sl.set('serverProxy', server);
+sl.set('store', store);
 
+// Loads all base OARE Components.
 loadBases();
 
+// Initializes Google Analytics if in production mode.
 Vue.use(Vuetify);
 if (process.env.NODE_ENV === 'production') {
   Vue.use(
@@ -37,10 +40,16 @@ if (process.env.NODE_ENV === 'production') {
     router
   );
 }
+
+// Disables the production tip.
 Vue.config.productionTip = false;
 
+// Sets up the Vue app.
 let app: Vue;
 
+/**
+ * Sets up the admin badge to be reset every 5 minutes.
+ */
 const setupAdminBadge = async () => {
   await resetAdminBadge();
 
@@ -49,8 +58,13 @@ const setupAdminBadge = async () => {
   }, 1000 * 60 * 5);
 };
 
+/**
+ * Initializes the authenticated user and initializes the Vue app, if not already initialized.
+ * This is called whenever the user's authentication state changes.
+ */
 firebase.auth().onIdTokenChanged(async user => {
   const { currentUser } = firebase.auth();
+  // If the user is authenticated, the user's token is set and the user's permissions are fetched.
   if (currentUser && user && user.email && user.displayName) {
     const idTokenResult = await currentUser.getIdTokenResult();
     store.setToken(idTokenResult);

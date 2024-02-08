@@ -25,7 +25,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from '@vue/composition-api';
 import OareSidebar from './components/base/OareSidebar/index.vue';
-import defaultRouter from './router';
+import sl from '@/serviceLocator';
 
 export default defineComponent({
   name: 'App',
@@ -33,9 +33,15 @@ export default defineComponent({
     OareSidebar,
   },
   setup(_, context) {
+    /**
+     * Indicates whether the drawer is open or not
+     */
     const drawer = ref(true);
-    const hasLanded = ref(false);
 
+    /**
+     * The sidebar component to render.
+     * Which sidebar to display is determined by the current route name.
+     */
     const sidebarComponent = computed(() => {
       const routeName = context.root.$route.name;
       if (routeName && routeName.includes('dashboard')) {
@@ -51,11 +57,13 @@ export default defineComponent({
       return 'OareSidebar';
     });
 
-    const router = computed(() => defaultRouter);
+    /**
+     * The router instance
+     */
+    const router = sl.get('router');
 
     return {
       drawer,
-      hasLanded,
       sidebarComponent,
       router,
     };

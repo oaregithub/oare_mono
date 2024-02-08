@@ -1,11 +1,9 @@
 import {
-  MarkupUnit,
   MarkupType,
   EpigraphicUnit,
-  EpigraphicUnitWithMarkup,
-  EpigraphicWord,
   LocaleCode,
   EpigraphicUnitSide,
+  TextMarkupRow,
 } from '@oare/types';
 
 const superscriptChars = {
@@ -83,32 +81,29 @@ const superscriptChars = {
 };
 
 export function getMarkupByDamageType(
-  markupUnits: MarkupUnit[],
+  markupRows: TextMarkupRow[],
   damageType: MarkupType
-): MarkupUnit | undefined {
-  return markupUnits.find(unit => unit.type === damageType);
+): TextMarkupRow | undefined {
+  return markupRows.find(unit => unit.type === damageType);
 }
 
 export function unitMatchesDamageType(
   neighbor: EpigraphicUnit,
   markupType: MarkupType
 ): boolean {
-  if (neighbor.markups) {
-    const match = neighbor.markups.some(markup => {
-      if (markup.type === markupType) {
-        return true;
-      }
-      return false;
-    });
-    return match;
-  }
-  return false;
+  const match = neighbor.markup.some(m => {
+    if (m.type === markupType) {
+      return true;
+    }
+    return false;
+  });
+  return match;
 }
 
 export function separateEpigraphicUnitsByWord(
-  characters: EpigraphicUnitWithMarkup[]
-): EpigraphicUnitWithMarkup[][] {
-  const words: EpigraphicUnitWithMarkup[][] = [];
+  characters: EpigraphicUnit[]
+): EpigraphicUnit[][] {
+  const words: EpigraphicUnit[][] = [];
   let lastDiscourseUuid: string | null = '';
   let curWordIdx = -1;
   characters.forEach((character, idx) => {
@@ -132,27 +127,36 @@ export function separateEpigraphicUnitsByWord(
 }
 
 export function getEpigraphicSeparator(
-  sign1: EpigraphicUnitWithMarkup,
-  sign2: EpigraphicUnitWithMarkup | null,
+  sign1: EpigraphicUnit,
+  sign2: EpigraphicUnit | null,
   isContraction: boolean
 ): string {
   if (sign2) {
     if (
-      !sign1.markups.map(unit => unit.type).includes('phoneticComplement') &&
-      sign2.markups.map(unit => unit.type).includes('phoneticComplement')
+      !sign1.markup.map(unit => unit.type).includes('phoneticComplement') &&
+      sign2.markup.map(unit => unit.type).includes('phoneticComplement')
     ) {
       return '';
     }
-    if (sign1.type === 'determinative' || sign2.type === 'determinative') {
+    if (
+      sign1.signReadingRow?.type === 'determinative' ||
+      sign2.signReadingRow?.type === 'determinative'
+    ) {
       return '';
     }
-    if (sign1.type === 'phonogram' || sign2.type === 'phonogram') {
+    if (
+      sign1.signReadingRow?.type === 'phonogram' ||
+      sign2.signReadingRow?.type === 'phonogram'
+    ) {
       return '-';
     }
     if (sign1.type === 'number' && sign2.type === 'number') {
       return '+';
     }
-    if (sign1.type === 'logogram' || sign2.type === 'logogram') {
+    if (
+      sign1.signReadingRow?.type === 'logogram' ||
+      sign2.signReadingRow?.type === 'logogram'
+    ) {
       return '.';
     }
   } else if (isContraction) {
@@ -162,7 +166,7 @@ export function getEpigraphicSeparator(
 }
 
 export function epigraphicWordWithSeparators(
-  characters: EpigraphicUnitWithMarkup[],
+  characters: EpigraphicUnit[],
   isContraction: boolean
 ): string {
   let wordWithSeparators = '';
@@ -180,23 +184,23 @@ export function epigraphicWordWithSeparators(
 }
 
 export function undeterminedReading(unit: EpigraphicUnit): string {
-  if (unit.markups.length > 0) {
-    const { value: markupValue } = unit.markups[0];
+  if (unit.markup.length > 0) {
+    const { numValue } = unit.markup[0];
 
-    if (markupValue === null) {
+    if (numValue === null) {
       return 'undetermined';
     }
-    if (markupValue === 1) {
+    if (numValue === 1) {
       return '1 broken line';
     }
-    return `${markupValue} broken lines`;
+    return `${numValue} broken lines`;
   }
   return '';
 }
 
 export function regionReading(unit: EpigraphicUnit): string {
-  if (unit.markups.length > 0) {
-    const { type: markupType, value: markupValue } = unit.markups[0];
+  if (unit.markup.length > 0) {
+    const { type: markupType, numValue } = unit.markup[0];
     const { reading } = unit;
 
     if (markupType === 'isSealImpression') {
@@ -211,32 +215,32 @@ export function regionReading(unit: EpigraphicUnit): string {
     }
 
     if (markupType === 'uninscribed') {
-      if (markupValue === null) {
+      if (numValue === null) {
         return 'uninscribed';
       }
-      if (markupValue === 1) {
+      if (numValue === 1) {
         return '1 uninscribed line';
       }
-      return `${markupValue} uninscribed lines`;
+      return `${numValue} uninscribed lines`;
     }
 
     if (markupType === 'ruling') {
-      if (markupValue === 1) {
+      if (numValue === 1) {
         return '---- Single Ruling ----';
       }
-      if (markupValue === 2) {
+      if (numValue === 2) {
         return '---- Double Ruling ----';
       }
-      if (markupValue === 3) {
+      if (numValue === 3) {
         return '---- Triple Ruling ----';
       }
       return '-'.repeat(12);
     }
 
     if (markupType === 'isStampSealImpression') {
-      const valueReading = `(${markupValue})`;
+      const valueReading = `(${numValue})`;
       return `Stamp Seal Impression ${reading || ''} ${
-        markupValue !== null ? valueReading : ''
+        numValue !== null ? valueReading : ''
       }`.trim();
     }
   }
@@ -244,12 +248,15 @@ export function regionReading(unit: EpigraphicUnit): string {
 }
 
 export function convertMarkedUpUnitsToLineReading(
-  characters: EpigraphicUnitWithMarkup[],
+  characters: EpigraphicUnit[],
   isRegular?: boolean
 ): string {
   const superscriptedCharacters = characters.map(character =>
-    character.type === 'determinative' && isRegular
-      ? { ...character, reading: superscript(character.reading) }
+    character.signReadingRow?.type === 'determinative' && isRegular
+      ? {
+          ...character,
+          reading: character.reading ? superscript(character.reading) : null,
+        }
       : character
   );
 
@@ -264,47 +271,8 @@ export function convertMarkedUpUnitsToLineReading(
     .join(' ');
 }
 
-export function convertMarkedUpUnitsToEpigraphicWords(
-  characters: EpigraphicUnitWithMarkup[]
-): EpigraphicWord[] {
-  const epigraphicWords = separateEpigraphicUnitsByWord(characters);
-  return epigraphicWords.map(signs => {
-    const isContraction = getContractionStatus(signs);
-    return {
-      uuids: signs.map(unit => unit.uuid),
-      reading: epigraphicWordWithSeparators(signs, isContraction),
-      discourseUuid: signs[0].discourseUuid,
-      signs: signs.map((sign, idx) => ({
-        uuid: sign.uuid,
-        epigType: sign.epigType,
-        type: sign.type,
-        signUuid: sign.signUuid,
-        readingUuid: sign.readingUuid,
-        reading: sign.reading,
-        separator: getEpigraphicSeparator(
-          sign,
-          idx !== signs.length - 1 ? signs[idx + 1] : null,
-          isContraction
-        ),
-        markups: sign.markups,
-        objOnTablet: sign.objOnTablet,
-        discourseUuid: sign.discourseUuid,
-      })),
-      isContraction,
-      word: signs[0].word || null,
-      form: signs[0].form || null,
-      translation: signs[0].translation || null,
-      parseInfo: signs[0].parseInfo || null,
-      isNumber: signs[0].epigType === 'number',
-      isDivider: signs.map(unit => unit.epigType).includes('separator'),
-    };
-  });
-}
-
-export const getContractionStatus = (
-  word: EpigraphicUnitWithMarkup[]
-): boolean => {
-  const spellingUuid = word.map(sign => sign.spellingUuid)[0];
+export const getContractionStatus = (word: EpigraphicUnit[]): boolean => {
+  const spellingUuid = word.map(sign => sign.discourse?.spellingUuid)[0];
   if (
     spellingUuid === '548189514651019744125244140023458311' ||
     spellingUuid === '548385815967702358357593121218684988'

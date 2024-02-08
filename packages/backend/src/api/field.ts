@@ -1,122 +1,114 @@
 import express from 'express';
 import sl from '@/serviceLocator';
-import { HttpInternalError } from '@/exceptions';
-import {
-  DeleteFieldPayload,
-  EditFieldPayload,
-  FieldInfo,
-  NewFieldPayload,
-} from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
+import { FieldPayload, FieldType } from '@oare/types';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import authenticatedRoute from '@/middlewares/router/authenticatedRoute';
 
 const router = express.Router();
 
 router
-  .route('/field_description/:referenceUuid')
-  .get(async (req, res, next) => {
+  .route('/field/:uuid')
+  .get(authenticatedRoute, async (req, res, next) => {
     try {
       const FieldDao = sl.get('FieldDao');
-      const { referenceUuid } = req.params;
-      const response:
-        | FieldInfo
-        | undefined = await FieldDao.getFieldInfoByReferenceAndType(
-        referenceUuid
+
+      const { uuid: referenceUuid } = req.params;
+      const type = (req.params.type || 'description') as FieldType;
+
+      const response = await FieldDao.getFieldRowsByReferenceUuidAndType(
+        referenceUuid,
+        type
       );
+
       res.json(response);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
-  });
-
-router
-  .route('/update_field_description')
-  .patch(
+  })
+  .post(
     permissionsRoute('ADD_EDIT_FIELD_DESCRIPTION'),
     async (req, res, next) => {
-      const FieldDao = sl.get('FieldDao');
-      const cache = sl.get('cache');
-      const {
-        uuid,
-        description,
-        primacy,
-        location,
-      }: EditFieldPayload = req.body as EditFieldPayload;
-
-      if (req.user && !req.user.isAdmin && primacy > 1) {
-        next(res.status(403).end());
-        return;
-      }
-
       try {
-        const language = (
-          await FieldDao.detectLanguage(description)
-        ).toLocaleLowerCase();
+        const FieldDao = sl.get('FieldDao');
+        const cache = sl.get('cache');
+        const utils = sl.get('utils');
 
-        await FieldDao.updateAllFieldFields(
-          uuid,
-          description,
-          language === 'english'
-            ? 'default'
-            : language[0].toLocaleUpperCase() + language.substring(1),
-          'description',
-          { primacy }
+        const { uuid: referenceUuid } = req.params;
+        const { field, primacy, type }: FieldPayload = req.body as FieldPayload;
+
+        if (req.user && !req.user.isAdmin && primacy > 1) {
+          next(
+            new HttpBadRequest(
+              'Only admins can add descriptions with primacy greater than 1.'
+            )
+          );
+          return;
+        }
+
+        const language = await utils.detectLanguage(field);
+
+        await FieldDao.insertField(
+          referenceUuid,
+          type,
+          field,
+          primacy,
+          language === 'english' ? 'default' : language
         );
 
-        if (location === 'taxonomyTree') {
-          cache.clear(
-            '/dictionary/tree/taxonomy',
-            {
-              level: 'exact',
-            },
-            req
-          );
-        }
+        cache.clear('/properties_taxonomy_tree', {
+          level: 'exact',
+        });
+        cache.clear('/person', { level: 'startsWith' });
+        cache.clear('/archive', { level: 'startsWith' });
+
         res.status(201).end();
       } catch (err) {
         next(new HttpInternalError(err as string));
       }
     }
   )
-  .post(
+  .patch(
     permissionsRoute('ADD_EDIT_FIELD_DESCRIPTION'),
     async (req, res, next) => {
-      const FieldDao = sl.get('FieldDao');
-      const cache = sl.get('cache');
-      const {
-        referenceUuid,
-        description,
-        primacy,
-        location,
-      }: NewFieldPayload = req.body as NewFieldPayload;
-
-      if (req.user && !req.user.isAdmin && primacy > 1) {
-        next(res.status(403).end());
-        return;
-      }
-
       try {
-        const language = (
-          await FieldDao.detectLanguage(description)
-        ).toLocaleLowerCase();
-        await FieldDao.insertField(
-          referenceUuid,
-          'description',
-          description,
-          primacy,
-          language === 'english'
-            ? 'default'
-            : language[0].toLocaleUpperCase() + language.substring(1)
-        );
-        if (location === 'taxonomyTree') {
-          cache.clear(
-            '/dictionary/tree/taxonomy',
-            {
-              level: 'exact',
-            },
-            req
-          );
+        const FieldDao = sl.get('FieldDao');
+        const cache = sl.get('cache');
+        const utils = sl.get('utils');
+
+        const { uuid } = req.params;
+        const { field, primacy, type }: FieldPayload = req.body as FieldPayload;
+
+        const fieldExists = await FieldDao.fieldExists(uuid);
+        if (!fieldExists) {
+          next(new HttpBadRequest('Field does not exist.'));
+          return;
         }
-        res.status(201).end();
+
+        if (!req.user!.isAdmin && primacy > 1) {
+          next(
+            new HttpBadRequest('Only admins can edit primacy greater than 1.')
+          );
+          return;
+        }
+
+        const language = await utils.detectLanguage(field);
+
+        await FieldDao.updateField(
+          uuid,
+          field,
+          language === 'english' ? 'default' : language,
+          type,
+          primacy
+        );
+
+        cache.clear('/properties_taxonomy_tree', {
+          level: 'exact',
+        });
+        cache.clear('/person', { level: 'startsWith' });
+        cache.clear('/archive', { level: 'startsWith' });
+
+        res.status(204).end();
       } catch (err) {
         next(new HttpInternalError(err as string));
       }
@@ -125,29 +117,36 @@ router
   .delete(
     permissionsRoute('ADD_EDIT_FIELD_DESCRIPTION'),
     async (req, res, next) => {
-      const FieldDao = sl.get('FieldDao');
-      const cache = sl.get('cache');
-      const {
-        uuid,
-        location,
-        primacy,
-        referenceUuid,
-        type,
-      }: DeleteFieldPayload = req.body as DeleteFieldPayload;
-
       try {
-        await FieldDao.deleteField(uuid);
-        await FieldDao.decrementPrimacy(primacy, referenceUuid, type);
+        const FieldDao = sl.get('FieldDao');
+        const cache = sl.get('cache');
 
-        if (location === 'taxonomyTree') {
-          cache.clear(
-            '/dictionary/tree/taxonomy',
-            {
-              level: 'exact',
-            },
-            req
+        const { uuid } = req.params;
+
+        const fieldExists = await FieldDao.fieldExists(uuid);
+        if (!fieldExists) {
+          next(new HttpBadRequest('Field does not exist.'));
+          return;
+        }
+
+        const fieldRow = await FieldDao.getFieldRowByUuid(uuid);
+
+        await FieldDao.deleteField(uuid);
+
+        if (fieldRow.primacy !== null && fieldRow.type !== null) {
+          await FieldDao.decrementPrimacy(
+            fieldRow.referenceUuid,
+            fieldRow.primacy,
+            fieldRow.type
           );
         }
+
+        cache.clear('/properties_taxonomy_tree', {
+          level: 'exact',
+        });
+        cache.clear('/person', { level: 'startsWith' });
+        cache.clear('/archive', { level: 'startsWith' });
+
         res.status(204).end();
       } catch (err) {
         next(new HttpInternalError(err as string));

@@ -1,54 +1,15 @@
 import express from 'express';
 import sl from '@/serviceLocator';
 import { HttpBadRequest, HttpInternalError } from '@/exceptions';
-import {
-  NewDiscourseRowPayload,
-  DiscourseProperties,
-  InsertParentDiscourseRowPayload,
-  TextDiscourseRow,
-  DiscourseUnitType,
-  EditTranslationPayload,
-} from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
+import { InsertParentDiscourseRowPayload, TextDiscourseRow } from '@oare/types';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
 import { v4 } from 'uuid';
 import { convertAppliedPropsToItemProps } from '@oare/oare';
-import { nestProperties } from '../utils/index';
 
 const router = express.Router();
 
 router
-  .route('/text_discourse')
-  .post(permissionsRoute('INSERT_DISCOURSE_ROWS'), async (req, res, next) => {
-    const TextDiscourseDao = sl.get('TextDiscourseDao');
-    const utils = sl.get('utils');
-
-    const {
-      spelling,
-      formUuid,
-      occurrences,
-    }: NewDiscourseRowPayload = req.body;
-
-    try {
-      await utils.createTransaction(async trx => {
-        for (let i = 0; i < occurrences.length; i += 1) {
-          // eslint-disable-next-line no-await-in-loop
-          await TextDiscourseDao.insertNewDiscourseRow(
-            spelling,
-            formUuid,
-            occurrences[i].epigraphyUuids,
-            occurrences[i].textUuid,
-            trx
-          );
-        }
-      });
-      res.status(201).end();
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
-
-router
-  .route('/text_discourse_parent')
+  .route('/text_discourse/parent')
   .post(
     permissionsRoute('INSERT_PARENT_DISCOURSE_ROWS'),
     async (req, res, next) => {
@@ -88,13 +49,13 @@ router
           (a, b) => a.objInText - b.objInText
         );
 
+        const newRowUuid = v4();
         const newRowObjInText = sortedDiscourseSelections[0].objInText;
         const newRowChildNum = sortedDiscourseSelections[0].childNum!;
-        const newRowUuid = v4();
 
         await utils.createTransaction(async trx => {
           const newRowTreeUuid = (
-            await TextDiscourseDao.getDiscourseRowByUuid(
+            await TextDiscourseDao.getTextDiscourseRowByUuid(
               sortedDiscourseSelections[0].uuid,
               trx
             )
@@ -106,6 +67,7 @@ router
             1,
             trx
           );
+
           await Promise.all(
             sortedDiscourseSelections.map((selection, idx) =>
               TextDiscourseDao.updateChildNum(selection.uuid, idx + 1, trx)
@@ -114,7 +76,7 @@ router
 
           const newDiscourseRow: TextDiscourseRow = {
             uuid: newRowUuid,
-            type: discourseType.toLowerCase() as DiscourseUnitType,
+            type: discourseType,
             objInText: newRowObjInText,
             wordOnTablet: null,
             childNum: newRowChildNum,
@@ -127,19 +89,20 @@ router
             transcription: null,
           };
           await TextDiscourseDao.insertDiscourseRow(newDiscourseRow, trx);
+
           await TextDiscourseDao.updateParentUuid(
-            newRowUuid,
             sortedDiscourseSelections.map(selection => selection.uuid),
+            newRowUuid,
             trx
           );
 
-          const siblings = await TextDiscourseDao.getChildrenUuids(
+          const siblings = await TextDiscourseDao.getTextDiscourseUuidsByParentUuid(
             sortedDiscourseSelections[0].parentUuid!,
             trx
           );
           const siblingRows = await Promise.all(
             siblings.map(sibling =>
-              TextDiscourseDao.getDiscourseRowByUuid(sibling, trx)
+              TextDiscourseDao.getTextDiscourseRowByUuid(sibling, trx)
             )
           );
           const relevantSiblingRows = siblingRows.filter(
@@ -159,9 +122,9 @@ router
             properties,
             newRowUuid
           );
-          await ItemPropertiesDao.addProperties(itemPropertyRows, trx);
+          await ItemPropertiesDao.insertItemPropertyRows(itemPropertyRows, trx);
 
-          if (discourseType === 'Sentence') {
+          if (discourseType === 'sentence') {
             await FieldDao.insertField(
               newRowUuid,
               'translation',
@@ -170,8 +133,8 @@ router
               'default',
               trx
             );
-          } else if (discourseType === 'Paragraph') {
-            await AliasDao.insertAlias(
+          } else if (discourseType === 'paragraph') {
+            await AliasDao.insertAliasRow(
               'label',
               newRowUuid,
               newContent,
@@ -183,13 +146,9 @@ router
           }
         });
 
-        await cache.clear(
-          `/text_epigraphies/text/${textUuid}`,
-          {
-            level: 'startsWith',
-          },
-          req
-        );
+        await cache.clear(`/epigraphies/${textUuid}`, {
+          level: 'startsWith',
+        });
 
         res.status(201).end();
       } catch (err) {
@@ -198,90 +157,15 @@ router
     }
   );
 
-router.route('/text_discourse/properties/:uuid').get(async (req, res, next) => {
+router.route('/text_discourse/:uuid').get(async (req, res, next) => {
   try {
-    const { uuid: discourseUuid } = req.params;
-    const ItemPropertiesDao = sl.get('ItemPropertiesDao');
-    const NoteDao = sl.get('NoteDao');
-
-    const properties = await ItemPropertiesDao.getPropertiesByReferenceUuid(
-      discourseUuid
-    );
-
-    const propertiesWithChildren = nestProperties(properties, null);
-
-    const notes = await NoteDao.getNotesByReferenceUuid(discourseUuid);
-
-    const response: DiscourseProperties = {
-      properties: propertiesWithChildren,
-      notes,
-    };
-    res.json(response);
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
-
-router
-  .route('/text_discourse/:uuid')
-  .patch(permissionsRoute('EDIT_TRANSLATION'), async (req, res, next) => {
-    const FieldDao = sl.get('FieldDao');
-    const cache = sl.get('cache');
-    const { uuid } = req.params;
-    const { newTranslation, textUuid }: EditTranslationPayload = req.body;
-
-    try {
-      const fieldRow = await FieldDao.getByReferenceUuid(uuid);
-      await FieldDao.updateField(fieldRow[0].uuid, newTranslation, {
-        primacy: 1,
-      });
-
-      await cache.clear(
-        `/text_epigraphies/text/${textUuid}`,
-        {
-          level: 'startsWith',
-        },
-        req
-      );
-
-      res.status(201).end();
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  })
-  .post(permissionsRoute('EDIT_TRANSLATION'), async (req, res, next) => {
-    const FieldDao = sl.get('FieldDao');
-    const cache = sl.get('cache');
-    const { uuid } = req.params;
-    const { newTranslation, textUuid }: EditTranslationPayload = req.body;
-
-    try {
-      await FieldDao.insertField(uuid, 'translation', newTranslation, 0, null);
-
-      await cache.clear(
-        `/text_epigraphies/text/${textUuid}`,
-        {
-          level: 'startsWith',
-        },
-        req
-      );
-
-      res.status(201).end();
-    } catch (err) {
-      next(new HttpInternalError(err as string));
-    }
-  });
-
-router.route('/text_discourse/spelling/:uuid').get(async (req, res, next) => {
-  try {
-    const { uuid: discourseUuid } = req.params;
     const TextDiscourseDao = sl.get('TextDiscourseDao');
 
-    const spelling: string = await TextDiscourseDao.getSpellingByDiscourseUuid(
-      discourseUuid
-    );
+    const { uuid } = req.params;
 
-    res.json(spelling);
+    const textDiscourse = await TextDiscourseDao.getTextDiscourseByUuid(uuid);
+
+    res.json(textDiscourse);
   } catch (err) {
     next(new HttpInternalError(err as string));
   }

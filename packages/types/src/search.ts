@@ -1,16 +1,12 @@
-import { DiscourseUnit } from './textDiscourse';
+import { Image } from './resource';
+import { Text } from './text';
+
+// FIXME
 
 export interface SearchTextsResultRow {
   uuid: string;
   name: string;
   matches: string[];
-  discourseUuids: string[];
-}
-
-export interface WordsInTextsSearchResultRow {
-  uuid: string;
-  name: string;
-  discourseUnits: DiscourseUnit[];
   discourseUuids: string[];
 }
 
@@ -30,11 +26,6 @@ export interface SearchTextsCountPayload {
 
 export interface SearchTextsResponse {
   results: SearchTextsResultRow[];
-}
-
-export interface WordsInTextsSearchResponse {
-  results: WordsInTextsSearchResultRow[];
-  total: number;
 }
 
 export interface SearchCooccurrence {
@@ -57,13 +48,37 @@ export interface SearchNullDiscourseResultRow extends SearchNullDiscourseLine {
   reading: string;
 }
 
+export interface SearchFailureRequest {
+  type: SearchType;
+  query: string;
+}
+
+// FIXME UPDATED
+export type SearchPotentialPermissionsListsType = 'text' | 'img' | 'edit';
+
+export interface SearchPotentialPermissionsListsResponse {
+  results: Text[] | Image[];
+  count: number;
+}
+
+export type SearchTransliterationMode =
+  | 'respectNoBoundaries'
+  | 'respectBoundaries'
+  | 'respectAllBoundaries';
+
+export interface SearchTransliterationItem {
+  text: Text;
+  matches: string[];
+  discourseUuids: string[];
+}
+
+export interface SearchTransliterationResponse {
+  results: SearchTransliterationItem[];
+  count: number;
+}
+
 export type SearchType =
   | 'title'
   | 'transliteration'
   | 'words'
   | 'title+transliteration';
-
-export interface SearchFailureRequest {
-  type: SearchType;
-  query: string;
-}

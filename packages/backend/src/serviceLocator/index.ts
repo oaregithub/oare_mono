@@ -1,102 +1,113 @@
-import DictionaryFormDao from '@/api/daos/DictionaryFormDao';
-import DictionaryWordDao from '@/api/daos/DictionaryWordDao';
-import TextDiscourseDao from '@/api/daos/TextDiscourseDao';
-import UserDao from '@/api/daos/UserDao';
-import TextDraftsDao from '@/api/daos/TextDraftsDao';
-import OareGroupDao from '@/api/daos/OareGroupDao';
-import DictionarySpellingDao from '@/api/daos/DictionarySpellingDao';
+import AliasDao from '@/daos/AliasDao';
+import ArchiveDao from '@/daos/ArchiveDao';
+import AssetDao from '@/daos/AssetDao';
+import BibliographyDao from '@/daos/BibliographyDao';
 import cache from '@/cache';
-import TextMarkupDao from '@/api/daos/TextMarkupDao';
-import TextDao from '@/api/daos/TextDao';
-import HierarchyDao from '@/api/daos/HierarchyDao';
-import TextEpigraphyDao from '@/api/daos/TextEpigraphyDao';
-import PublicDenylistDao from '@/api/daos/PublicDenylistDao';
-import SignReadingDao from '@/api/daos/SignReadingDao';
-import FieldDao from '@/api/daos/FieldDao';
-import ItemPropertiesDao from '@/api/daos/ItemPropertiesDao';
-import UserGroupDao from '@/api/daos/UserGroupDao';
-import PermissionsDao from '@/api/daos/PermissionsDao';
-import CommentsDao from '@/api/daos/CommentsDao';
-import ThreadsDao from '@/api/daos/ThreadsDao';
-import ErrorsDao from '@/api/daos/ErrorsDao';
-import CollectionDao from '@/api/daos/CollectionDao';
-import CacheStatusDao from '@/api/daos/CacheStatusDao';
-import CollectionTextUtils from '@/api/daos/CollectionTextUtils';
-import PersonDao from '@/api/daos/PersonDao';
-import GroupAllowlistDao from '@/api/daos/GroupAllowlistDao';
-import GroupEditPermissionsDao from '@/api/daos/GroupEditPermissionsDao';
-import ResourceDao from '@/api/daos/ResourceDao';
-import AliasDao from '@/api/daos/AliasDao';
-import PublicationDao from '@/api/daos/PublicationDao';
-import ArchiveDao from '@/api/daos/ArchiveDao';
-import NoteDao from '@/api/daos/NoteDao';
-import PageContentDao from '@/api/daos/PageContentDao';
-import SearchFailureDao from '@/api/daos/SearchFailureDao';
-import BibliographyDao from '@/api/daos/BibliographyDao';
-import TreeDao from '@/api/daos/TreeDao';
-import QuarantineTextDao from '@/api/daos/QuarantineTextDao';
+import CacheStatusDao from '@/daos/CacheStatusDao';
+import CollectionDao from '@/daos/CollectionDao';
+import CollectionTextUtils from '@/daos/CollectionTextUtils';
+import CommentsDao from '@/daos/CommentsDao';
+import ConceptDao from '@/daos/ConceptDao';
+import DictionaryFormDao from '@/daos/DictionaryFormDao';
+import DictionarySpellingDao from '@/daos/DictionarySpellingDao';
+import DictionaryWordDao from '@/daos/DictionaryWordDao';
+import EditTextUtils from '@/daos/EditTextUtils';
+import ErrorsDao from '@/daos/ErrorsDao';
+import EventDao from '@/daos/EventDao';
+import FieldDao from '@/daos/FieldDao';
+import GroupAllowlistDao from '@/daos/GroupAllowlistDao';
+import GroupEditPermissionsDao from '@/daos/GroupEditPermissionsDao';
+import HierarchyDao from '@/daos/HierarchyDao';
+import ItemPropertiesDao from '@/daos/ItemPropertiesDao';
+import NoteDao from '@/daos/NoteDao';
+import OareGroupDao from '@/daos/OareGroupDao';
+import PageContentDao from '@/daos/PageContentDao';
+import PeriodsDao from '@/daos/PeriodsDao';
+import PermissionsDao from '@/daos/PermissionsDao';
+import PersonDao from '@/daos/PersonDao';
+import PublicationDao from '@/daos/PublicationDao';
+import PublicDenylistDao from '@/daos/PublicDenylistDao';
+import QuarantineTextDao from '@/daos/QuarantineTextDao';
+import ResourceDao from '@/daos/ResourceDao';
+import SearchFailureDao from '@/daos/SearchFailureDao';
+import SignDao from '@/daos/SignDao';
+import SignOrgDao from '@/daos/SignOrgDao';
+import SignReadingDao from '@/daos/SignReadingDao';
+import SpatialUnitDao from '@/daos/SpatialUnitDao';
+import TextDao from '@/daos/TextDao';
+import TextDiscourseDao from '@/daos/TextDiscourseDao';
+import TextEpigraphyDao from '@/daos/TextEpigraphyDao';
+import TextMarkupDao from '@/daos/TextMarkupDao';
+import ThreadsDao from '@/daos/ThreadsDao';
+import TreeDao from '@/daos/TreeDao';
+import UserDao from '@/daos/UserDao';
+import UserGroupDao from '@/daos/UserGroupDao';
+import UuidDao from '@/daos/UuidDao';
 import * as utils from '@/utils';
-import BibliographyUtils from '@/api/daos/BibliographyUtils';
-import SealDao from '@/api/daos/SealDao';
-import EditTextUtils from '@/api/daos/EditTextUtils';
-import PeriodsDao from '@/api/daos/PeriodsDao';
-import AssetDao from '@/api/daos/AssetDao';
-import ConceptDao from '@/api/daos/ConceptDao';
-import EventDao from '@/api/daos/EventDao';
-import SpatialUnitDao from '@/api/daos/SpatialUnitDao';
 
+/**
+ * Stores the instantiated singletons in the service locator.
+ */
 const instances: { [key: string]: any } = {};
 
+/**
+ * Specifies the service types that are available in the service locator. Should be listed alphabetically.
+ */
 export type ServiceTypes = {
-  CollectionDao: typeof CollectionDao;
-  DictionaryFormDao: typeof DictionaryFormDao;
-  DictionaryWordDao: typeof DictionaryWordDao;
-  DictionarySpellingDao: typeof DictionarySpellingDao;
-  FieldDao: typeof FieldDao;
-  ItemPropertiesDao: typeof ItemPropertiesDao;
-  TextDiscourseDao: typeof TextDiscourseDao;
-  TextDraftsDao: typeof TextDraftsDao;
-  UserDao: typeof UserDao;
-  OareGroupDao: typeof OareGroupDao;
+  AliasDao: typeof AliasDao;
+  ArchiveDao: typeof ArchiveDao;
+  AssetDao: typeof AssetDao;
+  BibliographyDao: typeof BibliographyDao;
   cache: typeof cache;
-  TextMarkupDao: typeof TextMarkupDao;
-  TextDao: typeof TextDao;
-  HierarchyDao: typeof HierarchyDao;
-  TextEpigraphyDao: typeof TextEpigraphyDao;
-  PublicDenylistDao: typeof PublicDenylistDao;
-  SignReadingDao: typeof SignReadingDao;
-  UserGroupDao: typeof UserGroupDao;
-  PermissionsDao: typeof PermissionsDao;
-  CommentsDao: typeof CommentsDao;
-  ThreadsDao: typeof ThreadsDao;
-  ErrorsDao: typeof ErrorsDao;
   CacheStatusDao: typeof CacheStatusDao;
+  CollectionDao: typeof CollectionDao;
   CollectionTextUtils: typeof CollectionTextUtils;
-  PersonDao: typeof PersonDao;
+  CommentsDao: typeof CommentsDao;
+  ConceptDao: typeof ConceptDao;
+  DictionaryFormDao: typeof DictionaryFormDao;
+  DictionarySpellingDao: typeof DictionarySpellingDao;
+  DictionaryWordDao: typeof DictionaryWordDao;
+  EditTextUtils: typeof EditTextUtils;
+  ErrorsDao: typeof ErrorsDao;
+  EventDao: typeof EventDao;
+  FieldDao: typeof FieldDao;
   GroupAllowlistDao: typeof GroupAllowlistDao;
   GroupEditPermissionsDao: typeof GroupEditPermissionsDao;
-  ResourceDao: typeof ResourceDao;
-  AliasDao: typeof AliasDao;
+  HierarchyDao: typeof HierarchyDao;
+  ItemPropertiesDao: typeof ItemPropertiesDao;
   NoteDao: typeof NoteDao;
-  utils: typeof utils;
-  PublicationDao: typeof PublicationDao;
-  ArchiveDao: typeof ArchiveDao;
+  OareGroupDao: typeof OareGroupDao;
   PageContentDao: typeof PageContentDao;
-  SearchFailureDao: typeof SearchFailureDao;
-  BibliographyDao: typeof BibliographyDao;
-  BibliographyUtils: typeof BibliographyUtils;
-  TreeDao: typeof TreeDao;
-  QuarantineTextDao: typeof QuarantineTextDao;
-  SealDao: typeof SealDao;
-  EditTextUtils: typeof EditTextUtils;
   PeriodsDao: typeof PeriodsDao;
-  AssetDao: typeof AssetDao;
-  ConceptDao: typeof ConceptDao;
-  EventDao: typeof EventDao;
+  PermissionsDao: typeof PermissionsDao;
+  PersonDao: typeof PersonDao;
+  PublicationDao: typeof PublicationDao;
+  PublicDenylistDao: typeof PublicDenylistDao;
+  QuarantineTextDao: typeof QuarantineTextDao;
+  ResourceDao: typeof ResourceDao;
+  SearchFailureDao: typeof SearchFailureDao;
+  SignDao: typeof SignDao;
+  SignOrgDao: typeof SignOrgDao;
+  SignReadingDao: typeof SignReadingDao;
   SpatialUnitDao: typeof SpatialUnitDao;
+  TextDao: typeof TextDao;
+  TextDiscourseDao: typeof TextDiscourseDao;
+  TextEpigraphyDao: typeof TextEpigraphyDao;
+  TextMarkupDao: typeof TextMarkupDao;
+  ThreadsDao: typeof ThreadsDao;
+  TreeDao: typeof TreeDao;
+  UserDao: typeof UserDao;
+  UserGroupDao: typeof UserGroupDao;
+  UuidDao: typeof UuidDao;
+  utils: typeof utils;
 };
 
 export default {
+  /**
+   * Sets the instance of the given service type.
+   * @param instanceId The service type to set.
+   * @param instance An instance of the service type to set.
+   */
   set<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(
     instanceId: K,
     instance: V
@@ -104,6 +115,11 @@ export default {
     instances[instanceId] = instance;
   },
 
+  /**
+   * Retrieves the stored instance of the given service type.
+   * @param instanceId The service type to retrieve.
+   * @returns The stored instance of the given service type.
+   */
   get<K extends keyof ServiceTypes, V extends ServiceTypes[K]>(
     instanceId: K
   ): V {

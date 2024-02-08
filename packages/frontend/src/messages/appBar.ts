@@ -1,3 +1,6 @@
+/**
+ * This file contains internationalized text for the AppBar component.
+ */
 export default {
   en: {
     historyDep: 'History Department',

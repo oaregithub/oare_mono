@@ -1,26 +1,25 @@
-export type CopyWithPartial<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+// COMPLETE
 
-export interface UuidRow {
+export type SortOrder = 'asc' | 'desc'; // FIXME should use elsewhere!
+
+export interface Pagination {
+  page: number;
+  limit: number;
+  filter?: string;
+}
+
+export interface TextOccurrencesRow {
+  discourseUuid: string;
+  textName: string;
+  textUuid: string;
+}
+
+export interface TextOccurrencesResponseRow extends TextOccurrencesRow {
+  discourseUuidsToHighlight: string[];
+  readings: string[] | null;
+}
+
+export interface TextOccurrencesCountResponseItem {
   uuid: string;
+  count: number;
 }
-
-export type SortOrder = 'asc' | 'desc';
-
-export interface AdminBadgeOptions {
-  error: boolean;
-  comments: boolean;
-}
-
-export interface EnvironmentInfo {
-  elasticBeanstalkRegion: string;
-  databaseReadRegion: string;
-  databaseWriteRegion: string;
-  databaseReadOnly: boolean;
-}
-
-export interface Locale {
-  label: string;
-  value: LocaleCode;
-}
-
-export type LocaleCode = 'en' | 'tr';

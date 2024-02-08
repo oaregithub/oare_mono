@@ -1,4 +1,22 @@
-import { FieldInfo } from './field';
+import { FieldRow } from './field';
+
+// MOSTLY COMPLETE
+
+export interface ItemPropertyRow {
+  uuid: string;
+  referenceUuid: string;
+  parentUuid: string | null;
+  level: number | null;
+  variableUuid: string;
+  valueUuid: string | null;
+  objectUuid: string | null;
+  value: string | null;
+}
+
+export interface ItemProperty extends ItemPropertyRow {
+  variableRow: VariableRow;
+  valueRow: ValueRow | null;
+}
 
 export interface HierarchyData {
   uuid: string;
@@ -15,20 +33,20 @@ export interface HierarchyTopNode {
   hierarchy: HierarchyData;
   name: string | null;
   variables: PropertyVariable[];
-  fieldInfo: FieldInfo | null;
+  fieldInfo: FieldRow | null;
 }
 
 export interface PropertyVariable extends VariableRow {
   hierarchy: HierarchyData;
   level: number | null;
   values: PropertyValue[];
-  fieldInfo: FieldInfo | null;
+  fieldInfo: FieldRow | null;
 }
 
 export interface PropertyValue extends ValueRow {
   hierarchy: HierarchyData;
   variables: PropertyVariable[];
-  fieldInfo: FieldInfo | null;
+  fieldInfo: FieldRow | null;
 }
 
 export interface TaxonomyPropertyTree {
@@ -97,4 +115,8 @@ export interface LinkPropertiesSearchPayload {
 export interface PreselectionProperty {
   variableHierarchyUuid: string;
   valueUuid: string;
+}
+
+export interface EditPropertiesPayload {
+  properties: AppliedProperty[];
 }

@@ -1,3 +1,6 @@
+/**
+ * This file contains internationalized text for the login features.
+ */
 export default {
   en: {
     signIn: 'Sign In',

@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { createTabletRenderer } from '@oare/oare';
 import cliProgress from 'cli-progress';
-import TextEpigraphyDao from '../build/src/api/daos/TextEpigraphyDao';
+import TextEpigraphyDao from '../build/src/daos/TextEpigraphyDao';
 
 interface SignTextRow {
   sign_uuid_sequence: string;

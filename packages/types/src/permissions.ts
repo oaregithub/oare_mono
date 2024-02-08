@@ -1,3 +1,8 @@
+// COMPLETE
+
+import { Text } from './text';
+import { Image } from './resource';
+
 export type PermissionItem =
   | DictionaryPermission
   | PagePermission
@@ -7,7 +12,11 @@ export type PermissionItem =
 
 export type PermissionName = PermissionItem['name'];
 
+export type PermissionType = PermissionItem['type'];
+
 export interface PermissionTemplate {
+  name: string;
+  type: string;
   description: string;
   dependencies?: PermissionName[];
 }
@@ -38,10 +47,6 @@ export interface PagePermission extends PermissionTemplate {
   type: 'pages';
 }
 
-export interface SealPermission extends PermissionTemplate {
-  name: 'EDIT_SEAL' | 'ADD_SEAL_LINK';
-  type: 'seals';
-}
 export interface TextPermission extends PermissionTemplate {
   name:
     | 'VIEW_EPIGRAPHY_IMAGES'
@@ -67,40 +72,27 @@ export interface GeneralPermission extends PermissionTemplate {
   type: 'general';
 }
 
+export interface SealPermission extends PermissionTemplate {
+  name: 'EDIT_SEAL' | 'ADD_SEAL_LINK';
+  type: 'seals';
+}
+
 export interface UpdatePermissionPayload {
   permission: PermissionItem;
 }
 
-export type PermissionsListType = 'Text' | 'Collection' | 'Image';
+export type DenylistAllowlistType = 'text' | 'img';
 
-export interface DenylistAllowlistPayload {
+export interface DenylistAllowlist {
+  texts: Text[];
+  images: Image[];
+}
+
+export interface AddDenylistAllowlistPayload {
   uuids: string[];
-  type: 'text' | 'img' | 'collection';
+  type: DenylistAllowlistType;
 }
 
 export interface GroupEditPermissionsPayload {
   uuids: string[];
-  type: 'text' | 'collection';
-}
-
-export interface GetDenylistAllowlistParameters {
-  groupId: number;
-  type: 'text' | 'collection' | 'img';
-}
-
-export interface GetGroupEditPermissionParameters {
-  groupId: number;
-  type: 'text' | 'collection';
-}
-
-export interface DeleteDenylistAllowlistParameters {
-  groupId: number;
-  uuid: string;
-}
-
-export interface DenylistAllowlistItem {
-  uuid: string;
-  name?: string;
-  url?: string;
-  hasEpigraphy?: boolean;
 }

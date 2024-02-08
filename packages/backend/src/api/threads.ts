@@ -1,22 +1,16 @@
 import express from 'express';
 import sl from '@/serviceLocator';
-import { HttpInternalError } from '@/exceptions';
+import { HttpBadRequest, HttpInternalError } from '@/exceptions';
 import {
-  CommentDisplay,
-  Thread,
-  ThreadWithComments,
-  Comment,
-  ThreadDisplay,
-  UpdateThreadNameRequest,
-  AllCommentsRequest,
-  AllCommentsResponse,
   CreateThreadPayload,
+  Thread,
   ThreadStatus,
-  CommentSortType,
+  ThreadsSortType,
+  UpdateThreadNamePayload,
+  UpdateThreadStatusPayload,
 } from '@oare/types';
-import permissionsRoute from '@/middlewares/permissionsRoute';
-import adminRoute from '@/middlewares/adminRoute';
-import { toInteger } from 'lodash';
+import permissionsRoute from '@/middlewares/router/permissionsRoute';
+import adminRoute from '@/middlewares/router/adminRoute';
 
 const router = express.Router();
 
@@ -24,92 +18,74 @@ router
   .route('/threads/:referenceUuid')
   .get(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
-      const { referenceUuid } = req.params;
-      const threadsDao = sl.get('ThreadsDao');
-      const commentsDao = sl.get('CommentsDao');
-      const userDao = sl.get('UserDao');
+      const ThreadsDao = sl.get('ThreadsDao');
 
-      const threads: Thread[] = await threadsDao.getByReferenceUuid(
+      const { referenceUuid } = req.params;
+
+      const threads: Thread[] = await ThreadsDao.getThreadsByReferenceUuid(
         referenceUuid
       );
-      let results: ThreadWithComments[] = [];
 
-      const getUsersByComments = async (
-        comments: Comment[]
-      ): Promise<CommentDisplay[]> =>
-        Promise.all(
-          comments.map(async (comment: Comment) => {
-            const user = await userDao.getUserByUuid(comment.userUuid);
-
-            return {
-              uuid: comment.uuid,
-              threadUuid: comment.threadUuid,
-              userUuid: comment.userUuid,
-              userFirstName: user.firstName,
-              userLastName: user.lastName,
-              createdAt: new Date(comment.createdAt),
-              deleted: comment.deleted,
-              text: comment.text,
-            } as CommentDisplay;
-          })
-        );
-
-      results = await Promise.all(
-        threads.map(async thread => {
-          const comments = await commentsDao.getAllByThreadUuid(thread.uuid);
-          const commentDisplays = await getUsersByComments(comments);
-          return {
-            ...thread,
-            comments: commentDisplays,
-          };
-        })
-      );
-
-      res.json(results);
+      res.json(threads);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
   });
 
-router.route('/threads').put(adminRoute, async (req, res, next) => {
-  try {
-    const thread: Thread = req.body;
-    const threadsDao = sl.get('ThreadsDao');
-    const commentsDao = sl.get('CommentsDao');
-    const utils = sl.get('utils');
+router
+  .route('/threads/status/:uuid')
+  .patch(adminRoute, async (req, res, next) => {
+    try {
+      const ThreadsDao = sl.get('ThreadsDao');
+      const CommentsDao = sl.get('CommentsDao');
+      const utils = sl.get('utils');
 
-    const prevThread = await threadsDao.getByUuid(thread.uuid);
-    if (prevThread === null) {
-      throw new HttpInternalError('Previous Thread was not found');
+      const { uuid } = req.params;
+      const userUuid = req.user!.uuid;
+
+      const { status }: UpdateThreadStatusPayload = req.body;
+
+      const threadExists = await ThreadsDao.threadExists(uuid);
+      if (!threadExists) {
+        next(new HttpBadRequest('Thread does not exist'));
+        return;
+      }
+
+      const originalThread = await ThreadsDao.getThreadByUuid(uuid);
+
+      await utils.createTransaction(async trx => {
+        await ThreadsDao.updateThreadStatus(uuid, status, trx);
+
+        await CommentsDao.createComment(
+          uuid,
+          userUuid,
+          `The status was changed from ${originalThread.status} to ${status}`,
+          trx
+        );
+      });
+
+      res.status(204).end();
+    } catch (err) {
+      next(new HttpInternalError(err as string));
     }
-
-    await utils.createTransaction(async trx => {
-      await threadsDao.update(thread, trx);
-
-      await commentsDao.insert(
-        req.user!.uuid,
-        {
-          threadUuid: thread.uuid,
-          text: `The status was changed from ${prevThread.status} to ${thread.status}`,
-        },
-        trx
-      );
-    });
-
-    res.status(200).end();
-  } catch (err) {
-    next(new HttpInternalError(err as string));
-  }
-});
+  });
 
 router
-  .route('/threads/name')
-  .put(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
+  .route('/threads/name/:uuid')
+  .patch(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
-      const { threadUuid, newName }: UpdateThreadNameRequest = req.body;
-      const threadsDao = sl.get('ThreadsDao');
+      const ThreadsDao = sl.get('ThreadsDao');
 
-      await threadsDao.updateThreadName(threadUuid, newName);
+      const { uuid } = req.params;
+      const { name }: UpdateThreadNamePayload = req.body;
+
+      const threadExists = await ThreadsDao.threadExists(uuid);
+      if (!threadExists) {
+        next(new HttpBadRequest('Thread does not exist'));
+        return;
+      }
+
+      await ThreadsDao.updateThreadName(uuid, name);
 
       res.status(204).end();
     } catch (err) {
@@ -121,70 +97,31 @@ router
   .route('/threads')
   .get(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
-      const {
+      const ThreadsDao = sl.get('ThreadsDao');
+      const utils = sl.get('utils');
+
+      const status: ThreadStatus | '' = (req.query.status as string) as
+        | ThreadStatus
+        | '';
+      const name: string = req.query.name as string;
+      const sort = (req.query.sort as string) as ThreadsSortType;
+      const desc: boolean = (req.query.desc as string) === 'true';
+      const { page, limit } = utils.extractPagination(req.query);
+
+      const threadUuids = await ThreadsDao.getAllThreadUuids(
         status,
-        thread,
-        item,
-        comment,
-        sortType,
-        sortDesc,
+        name,
+        sort,
+        desc,
         page,
-        limit,
-        filter,
-        isUserComments,
-      } = req.query;
-
-      const threadsDao = sl.get('ThreadsDao');
-      const commentsDao = sl.get('CommentsDao');
-
-      const request: AllCommentsRequest = {
-        filters: {
-          status: status as ThreadStatus,
-          thread: thread as string,
-          item: item as string,
-          comment: comment as string,
-        },
-        sort: {
-          type: sortType as CommentSortType,
-          desc: toInteger(sortDesc) === 1,
-        },
-        pagination: {
-          page: toInteger(page),
-          limit: toInteger(limit),
-          filter: filter as string,
-        },
-        isUserComments: toInteger(isUserComments) === 1,
-      };
-
-      const userUuid = req.user ? req.user.uuid : null;
-
-      const threadRows = await threadsDao.getAll(request, userUuid);
-
-      const results: ThreadDisplay[] = await Promise.all(
-        threadRows.threads.map(async threadRow => {
-          const comments = await commentsDao.getAllByThreadUuid(
-            threadRow.uuid,
-            true
-          );
-          return {
-            thread: {
-              uuid: threadRow.uuid,
-              name: threadRow.name,
-              referenceUuid: threadRow.referenceUuid,
-              status: threadRow.status,
-              route: threadRow.route,
-            },
-            word: threadRow.item,
-            latestCommentDate: new Date(threadRow.timestamp),
-            comments,
-          } as ThreadDisplay;
-        })
+        limit
       );
 
-      res.json({
-        threads: results,
-        count: threadRows.count,
-      } as AllCommentsResponse);
+      const threads = await Promise.all(
+        threadUuids.map(uuid => ThreadsDao.getThreadByUuid(uuid))
+      );
+
+      res.json(threads);
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
@@ -192,20 +129,27 @@ router
   .post(permissionsRoute('ADD_COMMENTS'), async (req, res, next) => {
     try {
       const ThreadsDao = sl.get('ThreadsDao');
-      const newThread: CreateThreadPayload = req.body;
 
-      const newThreadUuid = await ThreadsDao.insert(newThread);
-      res.json(newThreadUuid);
+      const {
+        referenceUuid,
+        name,
+        tableReference,
+      }: CreateThreadPayload = req.body;
+
+      await ThreadsDao.createThread(referenceUuid, name, tableReference);
+
+      res.status(201).end();
     } catch (err) {
       next(new HttpInternalError(err as string));
     }
   });
 
-router.route('/newthreads/').get(adminRoute, async (_req, res, next) => {
+router.route('/new_threads').get(adminRoute, async (_req, res, next) => {
   try {
     const ThreadsDao = sl.get('ThreadsDao');
 
     const response = await ThreadsDao.newThreadsExist();
+
     res.json(response);
   } catch (err) {
     next(new HttpInternalError(err as string));
