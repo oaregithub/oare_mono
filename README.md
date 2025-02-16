@@ -1,8 +1,6 @@
 # Welcome to OARE
 
-Welcome to the Old Assyrian Research Environment project! We're glad you're here and are excited to work with you. On this page, you can find information for getting started on the project and running the site on your local machine for development purposes. You can also find information regarding project styling, best practices, and workflow processes. Please take the time to review everything on this page before getting started. The live site can be accessed at https://oare.byu.edu.
-
-Once again, we're glad you are on the team. The codebase is growing in size and complexity. We understand that it's going to take some time for you to familiarize yourself with the code, the conventions we follow, and the goals of the project. We'll do our best to give you a good overview and guide you along as you get started, but don't be afraid to reach out with any questions you might have at any point.
+Welcome to the Old Assyrian Research Environment project! On this page, you can find information on how to get started on the project and run the site on your local machine for development purposes. You can also find information regarding project styling, best practices, and workflow processes. The live site can be accessed at https://oare.byu.edu.
 
 # Table of Contents
 
@@ -41,23 +39,23 @@ Once again, we're glad you are on the team. The codebase is growing in size and 
 
 ## Languages and Frameworks
 
-This is a full-stack project. As such, you'll be writing code for both the frontend client views and the backend server, as well as interfacing with the MySQL database that serves as the backbone of the project.
+This is a full-stack project, including the frontend client views, some middleware customized to the particulars of the ancient language and its writing system, the backend server,  and the interface with the MySQL database that serves as the backbone of the project.
 
 On the frontend, we primarily use [Vue.js](https://vuejs.org), a framework that simplifies frontend logic and allows us to create reusable and scalable components. Specifically, we make use of the [Vue Composition API](https://v3.vuejs.org/guide/composition-api-introduction.html#why-composition-api), which has some important differences from the regular Vue CLI you may be familiar with. When compiled, Vue turns the code we write into valid HTML, CSS, and Javascript for use on the end browser. Additionally, to simplify our work, we use [Vuetify](https://vuetifyjs.com/en/), a Vue framework that makes applying Material Design language components extremely easy. By doing so, we can avoid tedious work in CSS by using pre-built UI components.
 
 On the backend, we use [Node.js](https://nodejs.org/en/), a Javascript runtime environment commonly used on servers. Using a package called [Express](https://expressjs.com), we are able to easily write REST APIs to interact with the data we need. We utilize the [Knex.js](https://knexjs.org) framework to wrap SQL statements and interface with the MySQL databse. The backend also interfaces with a Redis key-value caching database.
 
-On both the frontend and the backend, as well as in other parts of the project, we use [TypeScript](https://www.typescriptlang.org) code rather than vanilla Javascript. TypeScript is a superset of Javascript, meaning that all valid Javascript is valid TypeScript, but some additional features, such as strict typing enforcement, have been added. When compiled, TypeScript code is converted to Javascript for use in the browser environment. If you are unfamiliar with TypeScript, take some time to familiarize yourself as it is the primary language in the codebase. Documentation for TypeScript can be found [here](https://www.typescriptlang.org/docs/).
+On both the frontend and the backend, as well as in other parts of the project, we use [TypeScript](https://www.typescriptlang.org) code rather than vanilla Javascript. TypeScript is a superset of Javascript, meaning that all valid Javascript is valid TypeScript, but some additional features, such as strict typing enforcement, have been added. When compiled, TypeScript code is converted to Javascript for use in the browser environment. Documentation for TypeScript can be found [here](https://www.typescriptlang.org/docs/).
 
 ## Communication
 
-We use a number of different applications to communicate and work on the project. Our codebase, project steps, and code assignments are all found in this Github repository. Take some time to familiarize yourself with the repo. We primarily communicate about the project via Slack. If you haven't been added to the Slack workspace, ask the team lead or Dr. Stratford to add you.
+We use a number of different applications to communicate and work on the project. Our codebase, project steps, and code assignments are all found in this Github repository. We primarily communicate about the project via Slack. The team lead or Dr. Stratford can add new users to the Slack.
 
 ## Style Guide
 
-Our project primarily follows the [Javascript style guide created by Airbnb](https://github.com/airbnb/javascript). However, you may find that there are a few things that we may do slightly differently. For example, because we use TypeScript, there will be some differences when it comes to adding strict typing.
+Our project primarily follows the [Javascript style guide created by Airbnb](https://github.com/airbnb/javascript). However, there are a few things that we do slightly differently. For example, because we use TypeScript, there will be some differences when it comes to adding strict typing.
 
-To help us enforce this style guide, we use both the ESLint linter tool and the Prettier formatter, but they are not perfect. Do your best to familiarize yourself with the style guide and follow it as best as you can. In any case, if you accidentally miss something, the team lead will be happy to help you out during code review.
+To help us enforce this style guide, we use both the ESLint linter tool and the Prettier formatter, but they are not perfect. Following these style guides reduces time spent in the code review.
 
 To check whether your code abides by the existing linting rules, simpy run `yarn lint` in the terminal. Doing so will give you a detailed view of any lines in the code that are not formatted correctly. Running `yarn lint:fix` will fix the majority of these errors automatically, but more complex errors may require manual edits. When pushed to Github, every branch undergoes several test actions, including linting. Code that does not pass the linting cannot be merged, so taking the time to check linting regularly beforehand can make things easier.
 
@@ -83,7 +81,7 @@ Make sure to have the following settings enabled. They add support for auto-form
 
 # Running the Project Locally
 
-This is a monorepository containing all code necessary to run oare.byu.edu. This guide will explain how to set up the project locally and contains other information you will need to know as a developer on the project. The instructions vary slightly for Mac and Windows users, so be sure to follow the directions carefully. If you are using Windows, a few extra steps may be necessary.
+This is a monorepository containing all code necessary to run oare.byu.edu. This guide will explain how to set up the project locally and contains other information you will need to know as a developer on the project. The instructions vary slightly for Mac and Windows users. If you are using Windows, a few extra steps may be necessary.
 
 ## Create an OARE Account
 
@@ -113,7 +111,7 @@ This command will download WSL, set version 2 as the default (version 2 is requi
 
 ## Install Docker
 
-This project uses Docker to locally run a MySQL server. If you are not familiar with Docker, it lets you run apps inside of "containers", which are kind of like very lightweight virtual machines.
+This project currently uses Docker to locally run a MySQL server. Docker lets you run apps inside of "containers", which are kind of like very lightweight virtual machines.
 
 First, download Docker Desktop at this link: https://www.docker.com/products/docker-desktop. After downloading Docker, you will need to start the Docker Daemon. See the following instructions depending on your operating system.
 
@@ -137,7 +135,7 @@ In the system tray at the bottom-right of your screen, a whale icon should appea
 
 If you do not have a Github account, create one. Then, add an SSH key to your account so you have command line access by following [these instructions](https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account).
 
-Though the GitHub project is publicly visible, you will need to be added as a collaborator to the Github project before you can contribute to it. The team lead will need to invite you and you will need to accept the invitation in your email.
+Though the GitHub project is publicly visible, you will need to be added as a collaborator to the Github project before you can contribute to it. The team lead will invite you and you will accept the invitation in your email.
 
 ### For the Team Lead
 
@@ -206,7 +204,7 @@ It might take a few minutes to build the first time because Docker needs to inst
 
 You should now have a MySQL server running in a Docker container. However, it will be empty, so we need to populate it with real data.
 
-You will need a client that can connect to the MySQL container. We recommend [MySQL Workbench](https://dev.mysql.com/downloads/workbench/), but if you prefer some other client then that's fine too. Just note that these instructions are written for MySQL Workbench and we might have a hard time helping you if you're having problems with some other client.
+You will need a client that can connect to the MySQL container. We recommend [MySQL Workbench](https://dev.mysql.com/downloads/workbench/). Other clients are allowable. These instructions are written for MySQL Workbench the team can't help with problems with other clients.
 
 You will want to create three connections in MySQL Workbench - a connection to the production database, a readonly connection to the production database, and a local connection to the local database used for development. You can name each connection whatever you want, but make sure to configure the connections as directed below.
 
@@ -214,13 +212,13 @@ You will want to create three connections in MySQL Workbench - a connection to t
 
 ### Production and Read-only Connections
 
-For the production connection, create a new connection with a name of your choice. The hostname is "oare-0-3.c4t2up2es1cx.us-west-2.rds.amazonaws.com" (without the quotes). The username is "oare". Ask another team member for the password.
+For the production connection, create a new connection with a name of your choice. The hostname is "oare-0-3.c4t2up2es1cx.us-west-2.rds.amazonaws.com" (without the quotes). The username is "oare". Contact the team lead for the password.
 
-For the readonly connection, create another connection with a name of your choice. The hostname is the same as the production connection and the username is "oare_readonly". Again, ask another team member for the password. We recommend clicking the box that says "Store in keychain", if available, so you don't have to type the password in every time you want to connect.
+For the readonly connection, create another connection with a name of your choice. The hostname is the same as the production connection and the username is "oare_readonly". Again, contact the team lead for the password. We recommend clicking the box that says "Store in keychain", if available.
 
 ### Create a Local Copy of the Database
 
-Create another connection using a name of your choice. We recommend a name like "Docker OARE" or "Local OARE" to help differentiate between the local copy and the production copies. For "Hostname", put "localhost". Click "Test Connection". You will be asked for a password. The password is "example" (without the quotes). Note that we do not use Docker in production, so it's ok that the password is hardcoded in the codebase.
+Create another connection using a name of your choice. We recommend a name like "Docker OARE" or "Local OARE" to help differentiate between the local copy and the production copies. For "Hostname", put "localhost". Click "Test Connection". You will be asked for a password. The password is "example" (without quotes). Note that we do not use Docker in production, so it's ok that the password is hardcoded in the codebase.
 
 Now, you will need to export a copy of the production database so you can use it locally. In MySQL Workbench, open your production connection. Then go to Server > Data Export
 
@@ -230,7 +228,7 @@ Select the oarebyue_0.3 schema and make sure all the tables are selected. Make s
 
 ![](./readme-imgs/start-export.png)
 
-This could take a little while. Once the export is complete, you will need to import the exported database into your local database. Open the local database connection then go to Server > Data Import.
+This process can take a while. Once the export is complete, you will need to import the exported database into your local database. Open the local database connection then go to Server > Data Import.
 
 ![](./readme-imgs/upload-dump.png)
 
@@ -238,7 +236,7 @@ Select "Import from Self-Contained File" and choose the file that you exported i
 
 ![](./readme-imgs/data-import.png)
 
-This will take a while (there are over 15 million rows!). It might take a couple of hours, so be patient.
+This process also can take a while (there are over 15 million rows!). It might take a couple of hours, so be patient.
 
 ## Install Node.js and Yarn Package Manager
 
@@ -248,7 +246,7 @@ Note: The project does require a minimum Node version of 16.0.1. We recommend in
 
 ### Mac
 
-There are multiple ways to download and install Node.js and Yarn. You can choose to install them however you choose following the various instructions on the Node.js and Yarn installation pages. However, the instructions below outline how to install the packages using Homebrew, which is the method we recommend.
+There are multiple ways to download and install Node.js and Yarn. You can install them by following the instructions on the Node.js and Yarn installation pages. The instructions below outline how to install the packages using our recommendation,  Homebrew.
 
 Install Homebrew Package Manager by following the instructions on the [Homebrew site](https://brew.sh).
 
@@ -289,13 +287,11 @@ Finally, start the local server:
 yarn start
 ```
 
-In your browser, navigate to http://localhost:8080 and you should see the site. Log in using the account you created earlier and spend some time getting familiar with the site itself. Everything is running locally, so don't be afraid of messing anything up.
+In your browser, navigate to http://localhost:8080 and you should see the site. Log in using the account you created earlier to familiarize yourself with the site itself. Becasue Everything is running locally, experimentation is encouraged.
 
 # Workflow Processes
 
-As you know, this team primarily works asynchronously, meaning that there are no set work hours. You may complete assigned tasks at your convenience, but try your best to put in as many hours as you can (within the limits discussed in your interview). If you have any questions regarding hours or scheduling, contact Dr. Stratford.
-
-This section will outline the general process that you will follow to complete tasks in the project. Of course, it may vary from time to time given the specifics of the tasks assigned, but this guide will serve as a useful template for most assignments.
+This section will outline the general process for code development in the project. Of course, it may vary from time to time given the specifics of the tasks assigned, but this guide will serve as a useful template for most code generation assignments.
 
 ## Regularly Update Local Code and Database
 
@@ -303,9 +299,9 @@ Because multiple team members are making changes to the code and the contents of
 
 ### Code
 
-To keep your code up-to-date, make sure to pull down the latest version of the `main` branch. We recommend doing this at the beginning of each day you work, after any major changes in the codebase, or anytime after you merge changes into the `main` branch.
+To keep your code up-to-date, pull down the latest version of the `main` branch. We recommend doing this at the beginning of each day you work, after any major changes in the codebase, or anytime after you merge changes into the `main` branch.
 
-To pull down the latest version of `main`, first make sure that you are on the correct branch:
+To pull down the latest version of `main`, first ensure that you are on the correct branch:
 
 ```
 git checkout main
@@ -317,7 +313,7 @@ Once you are on the `main` branch, run the following to pull down all the latest
 git pull
 ```
 
-This will pull in the latest version of the `main` branch. If you are currently in the middle of making changes to a different branch, it is a good idea to update that branch with the newly pulled version of `main`. To do so, first navigate to the branch that needs updating:
+This will pull in the latest version of the `main` branch. If you are currently making changes to a different branch, update that branch with the newly pulled version of `main`. To do so, first navigate to the branch that needs updating:
 
 ```
 git checkout <your-branch>
@@ -329,7 +325,7 @@ Once you are on the branch that needs to be updated, run:
 git merge main
 ```
 
-This will merge the latest version of `main` into the branch you are currently editing. On occasion, this will result in merge conflicts that will need to be resolved before continuing.
+This will merge the latest version of `main` into the branch you are currently editing. On occasion, this will result in merge conflicts that must be resolved before continuing.
 
 ### Local Database Copy
 
@@ -405,7 +401,7 @@ A tutorial for writing unit tests will be created soon. In the meantime, the tea
 
 ## Final Checks
 
-Before committing your code, we recommend running a few quick checks to make sure everything is looking good. These same checks are run in Github Actions when you push your changes, but checking them locally first can save you a lot of time.
+Before committing your code, run checks to ensure the code is clean, functional, and operable. These same checks are run in Github Actions when you push your changes, but checking them locally first can save you a lot of time.
 
 Make sure the code builds without any errors by running:
 
